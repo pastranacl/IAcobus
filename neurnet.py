@@ -30,28 +30,7 @@ class NeuralNetwork:
             self.cost = __norm()
             self.cost_grad = __grad_norm()
 
-        self.build_network()
-
-
-
-    def build_network(self):
-        """
-
-        """
-
-        self.network = []
-
-        # Create First layer
-        self.network.append(__HiddenLayer(self.n_inputs,
-                                     self.topology[0],
-                                     self.activation_funcs[0])      )
-
-        # Create Hidden layers
-        for l in range(1, num_hidden_layers):
-            self.network.append(__HiddenLayer(self.topology[l-1],
-                                         self.topology[l],
-                                         self.activation_funcs[l])   )
-
+        self.__build_network()
 
 
 
@@ -61,7 +40,16 @@ class NeuralNetwork:
             The first time that is called, this function creates the linear Z and the
             non-linear actvation A for each layer of the network
 
-            Input:   X np.array[inputs values, samples] = The input vector to be used as input of the network
+            Parameters
+            ----------
+            X : np.array[n_inputs, samples]
+                The input vector to be used as input of the network
+
+            Returns
+            -------
+
+            Y_hat :  np.array[n_outputs, samples]
+                    Prediction given by the network
 
         """
         A = X
@@ -79,8 +67,12 @@ class NeuralNetwork:
         """
             Backpropagation algorithm in vectorised form
 
-            Input:  X np.array[inputs values, samples] = The input vector to be used as input of the network
-                    Y np.array[inputs values, samples] = Associated values to X
+            Parameters
+            ----------
+            X : np.array[inputs values, samples]
+                The input vector to be used as input of the network
+            Y : np.array[inputs values, samples]
+                Associated values to X
 
         """
 
@@ -107,43 +99,102 @@ class NeuralNetwork:
 
 
 
-    def train(self, X, Y, epochs=5):
+    def train(self, X, Y, num_epochs=5, batch_size=1):
         """
-            Training using backpropagation
+            Training of the network using backpropagation
+
+            Parameters
+            ----------
+            X : ndarray, shape(n_inputs, observations)
+                DEFINITION TODO
+            Y : ndarray, shape(n_outputs, observations)
+                DEFINITION TODO
+
+            num_epochs : int, optional
+                        DEFINITION TODO
+
+            batch_size : int, optional
+                        DEFINITION TODO
+
+            Returns
+            -------
+            cost_epoch : ndarray, shape(num_epochs)
+                        Evolution of the cost function during the training procedure
 
         """
+        assert X.shape[1] != Y.shape[1], "Non compatible number of observations: X.shape[1] != Y.shape[1]"
 
-        for n in tqdm(range(0, epochs)):
+        Omega_tot = X.shape[1]
+        n_chunks = Omega_tot/batch_size
 
-            # TODO
-            self.backpropagation(X, Y)
-
-            for layer in self.layers:
-
-                # Momentum
-
-                # RMSprop
-
-                # Bias correction
-
-                # Gradient descent
-                layer.W -= 0.1*layer.dJdW
-                layer.b -= 0.1*layer.dJdb
+        X_batches = np.array_split(X, n_chunks, axis=1)
+        Y_batches = np.array_split(Y, n_chunks, axis=1)
 
 
+        cost_epoch = np.zeros(num_epochs)
 
-    def __cost_norm(Y):
-        dY = self.Y_hat - Y
-        return np.sum( np.dot(dY,dY) )/Y.shape[1]
+        for epoch in tqdm(range(1, num_epochs)):
+
+            for x, y in zip(X_batches,  Y_batches):
+
+                self.backpropagation(x,y)
+
+                # Update every layer
+                for layer in self.layers:
+
+                    # Momentum
+
+                    # RMSprop
+
+                    # Bias correction
+
+                    # Gradient descent
+                    layer.W -= 0.1*layer.dJdW
+                    layer.b -= 0.1*layer.dJdb
 
 
-    def __cost_grad_norm(Y):
-        dY =  self.Y_hat - Y
-        return np.sum(dY)/Y.shape[1]
+                # Assign the cost to the epoch (which corresponds to before the update)
+                cost_epoch[epoch] = self.cost(y)
 
+
+            # Average cost
+            cost_epoch[epoch] /= Omega_tot
+
+            # Update progress bar
+            tqdm.write(f"Epoch {epoch}/{num_epochs}; Cost: {cost_epoch[epoch]}")
+
+
+        return cost_epoch
+
+
+
+
+
+    def __build_network(self):
+        """
+            Create all the neurons of the network.
+        """
+
+        self.network = []
+
+        # Create First layer
+        self.network.append(__HiddenLayer(self.n_inputs,
+                                     self.topology[0],
+                                     self.activation_funcs[0])      )
+
+        # Create Hidden layers
+        for l in range(1, num_hidden_layers):
+            self.network.append(__HiddenLayer(self.topology[l-1],
+                                         self.topology[l],
+                                         self.activation_funcs[l])   )
 
 
     class __HiddenLayer:
+
+        """
+            # TODO
+            DOCUMENT THE CLASS
+        """
 
         def __init__(self, n_neurons_prev, n_neurons, act_func="relu"):
 
@@ -172,27 +223,41 @@ class NeuralNetwork:
 
 
 
-        """
-            Activation functions
-        """
-        def __linear(self, x):
-            return x
+        # ----------------------------------------------#
+        #                Activation functions           #
+        #-----------------------------------------------#
+        def __linear(self, z):
+            return z
 
-        def __grad_linear(self, x):
-            return x#TODO
+        def __grad_linear(self, z):
+            return np.ones(z.size)
 
-        def __relu(self, x):
-            return np.maximum(0, x)
 
-        def  __grad_relu(self, x):
-            return  1 if x > 0 else 0
+        def __relu(self, z):
+            return np.maximum(0, z)
 
-        def __sigmoid(self, x):
-            return #TODO
+        def  __grad_relu(self, z):
+            return  1 if z > 0 else 0
 
-        def __grad_sigmoid(self, x):
-            #TODO
-            return
+
+        def __sigmoid(self, z):
+            return 1/(1 + exp(-z))
+
+        def __grad_sigmoid(self, z):
+            return __sigmoid(z)*(1 - __sigmoid(z))
+
+
+        # ----------------------------------------------#
+        #                Cost functions                 #
+        #-----------------------------------------------#
+        def __cost_norm(Y):
+            dY = self.Y_hat - Y
+            return np.sum( np.dot(dY,dY) )/Y.shape[1]
+
+
+        def __cost_grad_norm(Y):
+            dY =  self.Y_hat - Y
+            return np.sum(dY)/Y.shape[1]
 
 
 
