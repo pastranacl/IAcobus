@@ -10,25 +10,22 @@ class NeuralNetwork:
 
     """
 
-    def __init__(self, n_inputs, topology, activation_funcs, cost_function):
+    def __init__(self, n_inputs, topology, act_funcs, cost_func):
 
-        # assert!
-
-        # Initial Checks
-        if topology[0] != n_inputs:
-            raise ValueError(f"Inconsitent topology: n_inputs ({n_inputs}) must be equal than topology[0] ({topology[0]})")
-
-        if len(toplogy) != len(activation_funcs):
-            raise ValueError(f"The number of hidden layers differs form the activation functions")
+        # Initial checks
+        if len(topology) != len(act_funcs): raise ValueError(f"The number of hidden layers differs form the activation functions")
+        if cost_func not in ['mse', 'bin-cross-entropy', 'softmax']: raise ValueError(f"Unknown cost function")
 
 
-        self.toplogy = topology
+        # Set up the network
+        self.n_inputs = n_inputs
+        self.topology = topology
         self.act_funcs = act_funcs
         self.num_hidden_layers = len(topology)
 
-        if cost_funct=='norm':
-            self.cost = __norm()
-            self.cost_grad = __grad_norm()
+        if cost_func=='mse':
+            self.cost = self.__cost_norm
+            self.cost_grad = self.__cost_grad_norm
 
         self.__build_network()
 
@@ -99,7 +96,7 @@ class NeuralNetwork:
 
 
 
-    def train(self, X, Y, num_epochs=5, batch_size=1):
+    def train(self, X, Y, num_epochs=5, batch_size=1, learning_rate=1e-3):
         """
             Training of the network using backpropagation
 
@@ -134,7 +131,6 @@ class NeuralNetwork:
         cost_epoch = np.zeros(num_epochs)
 
         for epoch in tqdm(range(1, num_epochs)):
-
             for x, y in zip(X_batches,  Y_batches):
 
                 self.backpropagation(x,y)
@@ -149,16 +145,17 @@ class NeuralNetwork:
                     # Bias correction
 
                     # Gradient descent
-                    layer.W -= 0.1*layer.dJdW
-                    layer.b -= 0.1*layer.dJdb
+                    layer.W -= learning_rate * layer.dJdW
+                    layer.b -= learning_rate * layer.dJdb
 
 
-                # Assign the cost to the epoch (which corresponds to before the update)
+                # Assign the cost to the epoch
+                # It corresponds to before the update, since we did not call forward prop yet
                 cost_epoch[epoch] = self.cost(y)
 
 
-            # Average cost
-            cost_epoch[epoch] /= Omega_tot
+            # Average cost for the Omega observations
+            cost_epoch[epoch] *= batch_size
 
             # Update progress bar
             tqdm.write(f"Epoch {epoch}/{num_epochs}; Cost: {cost_epoch[epoch]}")
@@ -178,18 +175,18 @@ class NeuralNetwork:
         self.network = []
 
         # Create First layer
-        self.network.append(__HiddenLayer(self.n_inputs,
-                                     self.topology[0],
-                                     self.activation_funcs[0])      )
+        self.network.append(self.__HiddenLayer(self.n_inputs,
+                                                self.topology[0],
+                                                self.act_funcs[0])      )
 
         # Create Hidden layers
-        for l in range(1, num_hidden_layers):
-            self.network.append(__HiddenLayer(self.topology[l-1],
-                                         self.topology[l],
-                                         self.activation_funcs[l])   )
+        for l in range(1, self.num_hidden_layers):
+            self.network.append(self.__HiddenLayer(self.topology[l-1],
+                                                    self.topology[l],
+                                                    self.act_funcs[l])   )
 
 
-    class __HiddenLayer:
+    class __HiddenLayer():
 
         """
             # TODO
@@ -210,16 +207,16 @@ class NeuralNetwork:
 
             # Assign activation function
             if act_func == "relu":
-                self.activation_func = self._relu()
-                self.grad_activation_func = self._grad_relu()
+                self.activation_func = self.__relu
+                self.grad_activation_func = self.__grad_relu
 
             elif act_func == "sigmoid":
-                self.activation_func = self._sigmoid()
-                self.grad_activation_func = self._grad_sigmoid()
+                self.activation_func = self.__sigmoid
+                self.grad_activation_func = self.__grad_sigmoid
 
             elif act_func == "linear":
-                self.activation_func = self._linear()
-                self.grad_activation_func = self._grad_linear()
+                self.activation_func = self.__linear
+                self.grad_activation_func = self.__grad_linear
 
 
 
@@ -247,17 +244,17 @@ class NeuralNetwork:
             return __sigmoid(z)*(1 - __sigmoid(z))
 
 
-        # ----------------------------------------------#
-        #                Cost functions                 #
-        #-----------------------------------------------#
-        def __cost_norm(Y):
-            dY = self.Y_hat - Y
-            return np.sum( np.dot(dY,dY) )/Y.shape[1]
+    # ----------------------------------------------#
+    #                Cost functions                 #
+    #-----------------------------------------------#
+    def __cost_norm(self, Y):
+        dY = self.Y_hat - Y
+        return np.sum( np.dot(dY,dY) )/Y.shape[1]
 
 
-        def __cost_grad_norm(Y):
-            dY =  self.Y_hat - Y
-            return np.sum(dY)/Y.shape[1]
+    def __cost_grad_norm(self, Y):
+        dY =  self.Y_hat - Y
+        return np.sum(dY)/Y.shape[1]
 
 
 
@@ -266,4 +263,16 @@ class NeuralNetwork:
 if __name__ == '__main__':
 
     # Add test!
+    topology = [2,3,4]
+    activation_funcs = ['relu',
+                        'relu',
+                        'linear']
+    cost_funct = 'mse'
+
+    ryc = NeuralNetwork(2, topology, activation_funcs, cost_funct)
+
+    X_test = np.array([1,2])
+    print(ryc.forward(X_test) )
+
+
     print("Hello World!")
