@@ -74,23 +74,23 @@ class NeuralNetwork:
         """
 
         # First, forward propagation
+
         self.forward(X)
 
         # Last layer
-        L = self.n_neurons-1
+        L = self.num_hidden_layers - 1
         last_layer = self.network[L]
-        delta = self.grad_cost(Y, last_layer.A)*last_layer.grad_activation_func(last_layer.Z)
-
+        delta = self.cost_grad(Y)*last_layer.grad_activation_func(last_layer.Z)
         last_layer.dJdb = np.sum(delta, axis=1, keepdims=True)
         last_layer.dJdW = delta @ last_layer.A.T
 
         # Remaining layers
-        for l in reversed(range(0, self.n_neurons-1)):
+        for l in reversed(range(0, self.num_hidden_layers-1)):
 
             layer = self.network[l]
             next_layer = self.network[l+1]
 
-            delta = (next_layer.T @ delta) * layer.grad_activation_func(layer.Z)
+            delta = (next_layer.W.T @ delta) * layer.grad_activation_func(layer.Z)
             layer.dJdb =  np.sum(delta, axis=1, keepdims=True)
             layer.dJdW = delta @ layer.A.T
 
@@ -119,7 +119,9 @@ class NeuralNetwork:
                         Evolution of the cost function during the training procedure
 
         """
-        assert X.shape[1] != Y.shape[1], "Non compatible number of observations: X.shape[1] != Y.shape[1]"
+
+
+        #assert X.shape[1] != Y.shape[1], "Non compatible number of observations: X.shape[1] != Y.shape[1]"
 
         Omega_tot = X.shape[1]
         n_chunks = Omega_tot/batch_size
@@ -136,7 +138,7 @@ class NeuralNetwork:
                 self.backpropagation(x,y)
 
                 # Update every layer
-                for layer in self.layers:
+                for layer in self.network:
 
                     # Momentum
 
@@ -145,6 +147,8 @@ class NeuralNetwork:
                     # Bias correction
 
                     # Gradient descent
+                    print(layer.dJdW.shape)
+                    print(layer.W.shape)
                     layer.W -= learning_rate * layer.dJdW
                     layer.b -= learning_rate * layer.dJdb
 
@@ -234,7 +238,7 @@ class NeuralNetwork:
             return np.maximum(0, z)
 
         def  __grad_relu(self, z):
-            return  1 if z > 0 else 0
+            return  np.where(z > 0, 1, 0)
 
 
         def __sigmoid(self, z):
@@ -249,30 +253,10 @@ class NeuralNetwork:
     #-----------------------------------------------#
     def __cost_norm(self, Y):
         dY = self.Y_hat - Y
-        return np.sum( np.dot(dY,dY) )/Y.shape[1]
+        return np.sum( np.dot(dY,dY), keepdims=True )/Y.shape[1]
 
 
     def __cost_grad_norm(self, Y):
         dY =  self.Y_hat - Y
-        return np.sum(dY)/Y.shape[1]
+        return np.sum(dY, keepdims=True)/Y.shape[1]
 
-
-
-
-
-if __name__ == '__main__':
-
-    # Add test!
-    topology = [2,3,4]
-    activation_funcs = ['relu',
-                        'relu',
-                        'linear']
-    cost_funct = 'mse'
-
-    ryc = NeuralNetwork(2, topology, activation_funcs, cost_funct)
-
-    X_test = np.array([1,2])
-    print(ryc.forward(X_test) )
-
-
-    print("Hello World!")
