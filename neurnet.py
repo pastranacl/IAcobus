@@ -49,6 +49,7 @@ class NeuralNetwork:
                     Prediction given by the network
 
         """
+
         A = X
         for layer in self.network:
             layer.Z = layer.W @ A + layer.b
@@ -80,7 +81,7 @@ class NeuralNetwork:
         # Last layer
         L = self.num_hidden_layers - 1
         last_layer = self.network[L]
-        delta = self.cost_grad(Y)*last_layer.grad_activation_func(last_layer.Z)
+        delta = self.cost_grad(Y) * last_layer.grad_activation_func(last_layer.Z)
         last_layer.dJdb = np.sum(delta, axis=1, keepdims=True)
         last_layer.dJdW = delta @ last_layer.A.T
 
@@ -89,10 +90,11 @@ class NeuralNetwork:
 
             layer = self.network[l]
             next_layer = self.network[l+1]
+            prev_layer = self.network[l-1]
 
             delta = (next_layer.W.T @ delta) * layer.grad_activation_func(layer.Z)
             layer.dJdb =  np.sum(delta, axis=1, keepdims=True)
-            layer.dJdW = delta @ layer.A.T
+            layer.dJdW = delta @ prev_layer.A.T
 
 
 
@@ -132,7 +134,7 @@ class NeuralNetwork:
 
         cost_epoch = np.zeros(num_epochs)
 
-        for epoch in tqdm(range(1, num_epochs)):
+        for epoch in tqdm(range(0, num_epochs)):
             for x, y in zip(X_batches,  Y_batches):
 
                 self.backpropagation(x,y)
@@ -147,8 +149,6 @@ class NeuralNetwork:
                     # Bias correction
 
                     # Gradient descent
-                    print(layer.dJdW.shape)
-                    print(layer.W.shape)
                     layer.W -= learning_rate * layer.dJdW
                     layer.b -= learning_rate * layer.dJdb
 
@@ -199,13 +199,13 @@ class NeuralNetwork:
 
         def __init__(self, n_neurons_prev, n_neurons, act_func="relu"):
 
-            # Weight matrix and bias
-            self.W = np.random.rand(n_neurons, n_neurons_prev)
-            self.b = np.zeros((n_neurons, 1))
+            # Weight matrix (He initialisation) and bias
+            self.W =  np.random.rand(n_neurons, n_neurons_prev)*np.sqrt(2 / n_neurons_prev)
+            self.b = np.random.rand(n_neurons, 1)
 
 
             # Gradients of the cost with respect to the weigth matrix and bias
-            self.dJdW =  np.random.rand(n_neurons, n_neurons_prev)
+            self.dJdW =  np.zeros((n_neurons, n_neurons_prev))
             self.dJdb =  np.zeros((n_neurons, 1))
 
 
@@ -242,21 +242,21 @@ class NeuralNetwork:
 
 
         def __sigmoid(self, z):
-            return 1/(1 + exp(-z))
+            return 1/(1 + np.exp(-z))
 
         def __grad_sigmoid(self, z):
-            return __sigmoid(z)*(1 - __sigmoid(z))
+            return self.__sigmoid(z)*(1 - self.__sigmoid(z))
 
 
     # ----------------------------------------------#
     #                Cost functions                 #
     #-----------------------------------------------#
     def __cost_norm(self, Y):
-        dY = self.Y_hat - Y
-        return np.sum( np.dot(dY,dY), keepdims=True )/Y.shape[1]
+        dY = Y - self.Y_hat
+        return np.sum( dY*dY, keepdims=True )/(2*Y.shape[1])
 
 
     def __cost_grad_norm(self, Y):
-        dY =  self.Y_hat - Y
-        return np.sum(dY, keepdims=True)/Y.shape[1]
+        dY =  Y - self.Y_hat
+        return -np.sum(dY, keepdims=True)/Y.shape[1]
 
