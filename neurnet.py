@@ -50,13 +50,13 @@ class NeuralNetwork:
 
         """
 
-        A = X
+        A_prev = X
         for layer in self.network:
-            layer.Z = layer.W @ A + layer.b
+            layer.Z = layer.W @ A_prev + layer.b
             layer.A = layer.activation_func(layer.Z)
-            A = np.copy(layer.A)
+            A_prev = layer.A
 
-        self.Y_hat = np.copy(A)
+        self.Y_hat = np.copy(A_prev)
         return self.Y_hat
 
 
@@ -75,12 +75,10 @@ class NeuralNetwork:
         """
 
         # First, forward propagation
-
         self.forward(X)
 
         # Last layer
-        L = self.num_hidden_layers - 1
-        last_layer = self.network[L]
+        last_layer = self.network[-1]
         delta = self.cost_grad(Y) * last_layer.grad_activation_func(last_layer.Z)
         last_layer.dJdb = np.sum(delta, axis=1, keepdims=True)
         last_layer.dJdW = delta @ last_layer.A.T
@@ -90,15 +88,15 @@ class NeuralNetwork:
 
             layer = self.network[l]
             next_layer = self.network[l+1]
-            prev_layer = self.network[l-1]
+
+            A_prev = self.network[l-1].A if l > 0 else X
 
             delta = (next_layer.W.T @ delta) * layer.grad_activation_func(layer.Z)
             layer.dJdb =  np.sum(delta, axis=1, keepdims=True)
-            layer.dJdW = delta @ prev_layer.A.T
+            layer.dJdW = delta @ A_prev.T
 
 
-
-    def train(self, X, Y, num_epochs=5, batch_size=1, learning_rate=1e-3):
+    def train(self, X, Y, num_epochs=5, batch_size=1, learning_rate=1e-3, verbose = True):
         """
             Training of the network using backpropagation
 
@@ -121,16 +119,16 @@ class NeuralNetwork:
                         Evolution of the cost function during the training procedure
 
         """
+        if X.shape[1] != Y.shape[1]:
+            print("Non compatible number of observations: X.shape[1] != Y.shape[1]")
+            exit()
 
-
-        #assert X.shape[1] != Y.shape[1], "Non compatible number of observations: X.shape[1] != Y.shape[1]"
 
         Omega_tot = X.shape[1]
         n_chunks = Omega_tot/batch_size
 
         X_batches = np.array_split(X, n_chunks, axis=1)
         Y_batches = np.array_split(Y, n_chunks, axis=1)
-
 
         cost_epoch = np.zeros(num_epochs)
 
@@ -152,17 +150,20 @@ class NeuralNetwork:
                     layer.W -= learning_rate * layer.dJdW
                     layer.b -= learning_rate * layer.dJdb
 
+                    #print(layer.dJdW)
+                    #print("---------")
 
                 # Assign the cost to the epoch
                 # It corresponds to before the update, since we did not call forward prop yet
-                cost_epoch[epoch] = self.cost(y)
+                cost_epoch[epoch] += self.cost(y)
 
 
             # Average cost for the Omega observations
-            cost_epoch[epoch] *= batch_size
+            cost_epoch[epoch] /= Omega_tot
 
             # Update progress bar
-            tqdm.write(f"Epoch {epoch}/{num_epochs}; Cost: {cost_epoch[epoch]}")
+            if verbose == True:
+                tqdm.write(f" Epoch {epoch}/{num_epochs}; Cost: {cost_epoch[epoch]}")
 
 
         return cost_epoch
@@ -231,7 +232,7 @@ class NeuralNetwork:
             return z
 
         def __grad_linear(self, z):
-            return np.ones(z.size)
+            return np.ones_like(z)
 
 
         def __relu(self, z):
@@ -239,7 +240,6 @@ class NeuralNetwork:
 
         def  __grad_relu(self, z):
             return  np.where(z > 0, 1, 0)
-
 
         def __sigmoid(self, z):
             return 1/(1 + np.exp(-z))
@@ -253,10 +253,10 @@ class NeuralNetwork:
     #-----------------------------------------------#
     def __cost_norm(self, Y):
         dY = Y - self.Y_hat
-        return np.sum( dY*dY, keepdims=True )/(2*Y.shape[1])
+        return np.sum(dY*dY)/(2*Y.shape[1])
 
 
     def __cost_grad_norm(self, Y):
-        dY =  Y - self.Y_hat
-        return -np.sum(dY, keepdims=True)/Y.shape[1]
+        dY =  self.Y_hat - Y
+        return np.sum(dY, keepdims=True)/Y.shape[1]
 
