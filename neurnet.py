@@ -50,6 +50,10 @@ class NeuralNetwork:
 
         """
 
+        if X.shape[0] != self.n_inputs:
+            print("The number of features is not equal to the inputs indicated")
+            return 1 #exit()
+
         A_prev = X
         for layer in self.network:
             layer.Z = layer.W @ A_prev + layer.b
@@ -69,21 +73,21 @@ class NeuralNetwork:
             ----------
             X : np.array[inputs values, samples]
                 The input vector to be used as input of the network
-            Y : np.array[inputs values, samples]
+            Y : np.array[ouput values, samples]
                 Associated values to X
 
         """
 
-        # First, forward propagation
+        # 1. First, forward propagation
         self.forward(X)
 
-        # Last layer
+        # 2.1 Backpropagation  (Last layer)
         last_layer = self.network[-1]
         delta = self.cost_grad(Y) * last_layer.grad_activation_func(last_layer.Z)
         last_layer.dJdb = np.sum(delta, axis=1, keepdims=True)
         last_layer.dJdW = delta @ last_layer.A.T
 
-        # Remaining layers
+        # 2.2 Backpropagation (remaining layers)
         for l in reversed(range(0, self.num_hidden_layers-1)):
 
             layer = self.network[l]
@@ -121,8 +125,11 @@ class NeuralNetwork:
         """
         if X.shape[1] != Y.shape[1]:
             print("Non compatible number of observations: X.shape[1] != Y.shape[1]")
-            exit()
+            return 1
 
+        if X.shape[0] != self.n_inputs:
+            print("The number of features is not equal to the inputs indicated")
+            return 1
 
         Omega_tot = X.shape[1]
         n_chunks = Omega_tot/batch_size
@@ -201,7 +208,7 @@ class NeuralNetwork:
         def __init__(self, n_neurons_prev, n_neurons, act_func="relu"):
 
             # Weight matrix (He initialisation) and bias
-            self.W =  np.random.rand(n_neurons, n_neurons_prev)*np.sqrt(2 / n_neurons_prev)
+            self.W =  np.random.rand(n_neurons, n_neurons_prev)*np.sqrt(2.0 / n_neurons_prev)
             self.b = np.random.rand(n_neurons, 1)
 
 
@@ -236,10 +243,10 @@ class NeuralNetwork:
 
 
         def __relu(self, z):
-            return np.maximum(0, z)
+            return np.maximum(0.0, z)
 
         def  __grad_relu(self, z):
-            return  np.where(z > 0, 1, 0)
+            return  np.where(z > 0., 1.0, 0.0)
 
         def __sigmoid(self, z):
             return 1/(1 + np.exp(-z))
