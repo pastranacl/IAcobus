@@ -185,11 +185,24 @@ class NeuralNetwork:
 
 
 
+    # TODO
+    def one_hot_encoding(self, Y, n_classes):
+        """
+            Creates one hot encoded reppresentations of the input value Y
+            considering the existence of n_classes.
+        """
+
+
+        return one_hot_Y
+
+    def split_dat_test(X, Y, p_train, p_cross_val=0):
+        return 1
 
 
     def __build_network(self):
         """
-            Create all the neurons of the network.
+            Create all the layer and neurons of the network considering the
+            specified topolpogy and activation functions.
         """
 
         self.network = []
@@ -207,7 +220,6 @@ class NeuralNetwork:
 
 
     class __HiddenLayer():
-
         """
             # TODO
             DOCUMENT THE CLASS
@@ -215,7 +227,7 @@ class NeuralNetwork:
 
         def __init__(self, n_neurons_prev, n_neurons, act_func="relu"):
 
-            # Weight matrix (He initialisation) and bias
+            # Intialisation of the Weight matrix (He initialisation) and the bias vector
             self.W =  np.random.rand(n_neurons, n_neurons_prev)*np.sqrt(2.0 / n_neurons_prev)
             self.b = np.random.rand(n_neurons, 1)
 
@@ -224,6 +236,9 @@ class NeuralNetwork:
             self.dJdW =  np.zeros((n_neurons, n_neurons_prev))
             self.dJdb =  np.zeros((n_neurons, 1))
 
+            # The linar activation Z = WA^{l-1} + b parameter and the Activation A
+            # are first created during forward passing. At this stage we do not know
+            # the number of samples, i.e., columns in A and Z.
 
             # Assign activation function
             if act_func == "relu":
@@ -235,9 +250,12 @@ class NeuralNetwork:
                 self.grad_activation_func = self.__grad_sigmoid
 
             elif act_func == "linear":
-                self.activation_func = self.__linear
+                self.activation_func = self.__heavyside
                 self.grad_activation_func = self.__grad_linear
 
+            elif act_func == "heavyside":
+                self.activation_func = self.__linear
+                self.grad_activation_func = self.__grad_heavyside
 
         # ----------------------------------------------#
         #                Activation functions           #
@@ -263,6 +281,14 @@ class NeuralNetwork:
             return self.__sigmoid(z)*(1 - self.__sigmoid(z))
 
 
+        def __softmax(self, z):
+            Q = np.sum(z, axis=0, keepdims=True)
+            return z/Q
+
+        def __grad_softmax(self, z):
+            return 1
+
+
         def __heavyside(self, z):
             return np.where(z > 0., 1.0, 0.0)
 
@@ -277,7 +303,6 @@ class NeuralNetwork:
         dY = Y - self.Y_hat
         return np.sum(dY*dY)/(2*Y.shape[1])
 
-
     def __cost_grad_norm(self, Y):
         dY =  self.Y_hat - Y
         return np.sum(dY, keepdims=True)/Y.shape[1]
@@ -291,3 +316,9 @@ class NeuralNetwork:
         return  np.sum( (1 - Y)/(1 - self.Y_hat + NeuralNetwork.EPS) - Y/self.Y_hat, keepdims=True )
 
 
+
+    def __cost_cross_entropy(self, Y):
+        return np.sum(Y*np.log(self.Y_hat + NeuralNetwork.EPS))
+
+    def __cost_grad_cross_entropy(self, Y):
+        return np.sum(Y/ self.Y_hat, keepdims=True)
