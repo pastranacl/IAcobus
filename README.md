@@ -53,14 +53,14 @@ INDICATE HOW YOU SHOULD PROVIDE THE VALUES
 | `verbose` | Boolean. Prints the epoch number and the cost during training. |
 
 
-4. **Forward propagation:** The input array $X_test$ is passed
+4. **Forward propagation:** The input array `X_test` is passed
 
 ```
     Y_pred = ryc.forward(X_test)
     cost = ryc.cost(Y_test)
 ```
 
-The predictions variable `Y_pred` has dimensions given by ($n_{features}\times \Omega_{test}}$), where $n_{features}$ is the number indicated in the last layer nad $\Omega_{test}$ is the number of colums of $X_test$. Then, it can be convenient to transpose the data (`Y_pred = Y_pred.T`) for later usage such that the `Y_pred` is organanised in columns.
+The predictions variable `Y_pred` has dimensions given by ($n_{features}\times \Omega_{test}$), where $n_{features}$ is the number indicated in the last layer nad $\Omega_{test}$ is the number of colums of $X_test$. Then, it can be convenient to transpose the data (`Y_pred = Y_pred.T`) for later usage such that the `Y_pred` is organanised in columns.
 
 
 ## Examples
