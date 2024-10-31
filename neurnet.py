@@ -10,11 +10,16 @@ class NeuralNetwork:
 
     """
 
+
+    EPS = 1e-12     # Constant used to prevent numerical issues
+
+
     def __init__(self, n_inputs, topology, act_funcs, cost_func):
 
         # Initial checks
         if len(topology) != len(act_funcs): raise ValueError(f"The number of hidden layers differs form the activation functions")
-        if cost_func not in ['mse', 'bin-cross-entropy', 'softmax']: raise ValueError(f"Unknown cost function")
+        if any(af not in ['relu', 'sigmoid', 'linear', 'heavyside', 'softmax'] for af in act_funcs): raise ValueError(f"Unknown activation function")
+        if cost_func not in ['mse', 'bin-cross-entropy', 'cross-entropy']: raise ValueError(f"Unknown loss function")
 
 
         # Set up the network
@@ -23,9 +28,12 @@ class NeuralNetwork:
         self.act_funcs = act_funcs
         self.num_hidden_layers = len(topology)
 
-        if cost_func=='mse':
+        if cost_func == 'mse':
             self.cost = self.__cost_norm
             self.cost_grad = self.__cost_grad_norm
+        elif cost_func == 'bin-cross-entropy':
+            self.cost = self.__cost_binary_cross_entropy
+            self.cost_grad = self.__cost_grad_binary_cross_entropy
 
         self.__build_network()
 
@@ -231,7 +239,6 @@ class NeuralNetwork:
                 self.grad_activation_func = self.__grad_linear
 
 
-
         # ----------------------------------------------#
         #                Activation functions           #
         #-----------------------------------------------#
@@ -248,11 +255,19 @@ class NeuralNetwork:
         def  __grad_relu(self, z):
             return  np.where(z > 0., 1.0, 0.0)
 
+
         def __sigmoid(self, z):
             return 1/(1 + np.exp(-z))
 
         def __grad_sigmoid(self, z):
             return self.__sigmoid(z)*(1 - self.__sigmoid(z))
+
+
+        def __heavyside(self, z):
+            return np.where(z > 0., 1.0, 0.0)
+
+        def __grad_heavyside(self, z):
+            return np.where(z == 0., 1.0, 0.0)
 
 
     # ----------------------------------------------#
@@ -266,4 +281,13 @@ class NeuralNetwork:
     def __cost_grad_norm(self, Y):
         dY =  self.Y_hat - Y
         return np.sum(dY, keepdims=True)/Y.shape[1]
+
+
+
+    def __cost_binary_cross_entropy(self, Y):
+        return  np.sum((Y - 1)*np.log(1 - self.Y_hat + NeuralNetwork.EPS) - Y*np.log(self.Y_hat + NeuralNetwork.EPS))
+
+    def __cost_grad_binary_cross_entropy(self, Y):
+        return  np.sum( (1 - Y)/(1 - self.Y_hat + NeuralNetwork.EPS) - Y/self.Y_hat, keepdims=True )
+
 
