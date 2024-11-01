@@ -34,6 +34,9 @@ class NeuralNetwork:
         elif cost_func == 'bin-cross-entropy':
             self.cost = self.__cost_binary_cross_entropy
             self.cost_grad = self.__cost_grad_binary_cross_entropy
+        elif cost_func == 'cross-entropy':
+            self.cost = self.__cost_cross_entropy
+            self.cost_grad = self.__cost_grad_cross_entropy
 
         self.__build_network()
 
@@ -165,9 +168,6 @@ class NeuralNetwork:
                     layer.W -= learning_rate * layer.dJdW
                     layer.b -= learning_rate * layer.dJdb
 
-                    #print(layer.dJdW)
-                    #print("---------")
-
                 # Assign the cost to the epoch
                 # It corresponds to before the update, since we did not call forward prop yet
                 cost_epoch[epoch] += self.cost(y)
@@ -195,8 +195,53 @@ class NeuralNetwork:
 
         return one_hot_Y
 
-    def split_dat_test(X, Y, p_train, p_cross_val=0):
-        return 1
+
+    def split_data_train_test(self, X, Y, p_train=0.6):
+        """
+            Splits the data into training and test sets
+
+            Parameters
+            ----------
+            X : ndarray, shape(n_inputs, observations)
+                Array of features
+            Y : ndarray, shape(n_outputs, observations)
+                Array of labels
+
+            p_train : float, optional
+                      Relative proportion of the total data to use
+                      for the training set
+
+            Returns
+            -------
+            X_train : ndarray, shape(n_inputs, observations*p_train)
+                      Array of features for training
+
+            Y_train : ndarray, shape(n_ouputs, observations*p_train)
+                      Array of labels for training
+
+            X_train : ndarray, shape(n_inputs, observations*(1-p_train))
+                      Array of features for test set
+
+            Y_train : ndarray, shape(n_ouputs, observations*(1-p_train))
+                      Array of labels for test set
+        """
+
+        Omega = X.shape[1]
+
+        indices = np.linspace(0, Omega-1, Omega)
+        idx_train = np.int32(np.random.choice(indices,
+                                            int(np.round(p_train*Omega)),
+                                            replace=False) )
+
+        mask = np.zeros(Omega, dtype=bool)
+        mask[idx_train] = 1
+
+        X_train = X[:, mask ]
+        Y_train = Y[:, mask ]
+        X_test = X[:, ~mask ]
+        Y_test = Y[:, ~mask ]
+
+        return X_train, Y_train, X_test, Y_test
 
 
     def __build_network(self):
@@ -318,7 +363,7 @@ class NeuralNetwork:
 
 
     def __cost_cross_entropy(self, Y):
-        return np.sum(Y*np.log(self.Y_hat + NeuralNetwork.EPS))
+        return -np.sum(Y*np.log(self.Y_hat + NeuralNetwork.EPS))
 
     def __cost_grad_cross_entropy(self, Y):
-        return np.sum(Y/ self.Y_hat, keepdims=True)
+        return -np.sum(Y/ self.Y_hat, keepdims=True)
