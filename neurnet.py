@@ -118,15 +118,18 @@ class NeuralNetwork:
             Parameters
             ----------
             X : ndarray, shape(n_inputs, observations)
-                DEFINITION TODO
+                The input vector to be used as input of the network
             Y : ndarray, shape(n_outputs, observations)
-                DEFINITION TODO
-
+                 Associated values or labels to the input features in X
             num_epochs : int, optional
-                        DEFINITION TODO
-
+                        Number of passes to the data
             batch_size : int, optional
-                        DEFINITION TODO
+                        Dimension of the batch, i.e., number of samples to use for
+                        training
+            learning_rate : float
+                            Initial value to consider for training
+            verbose : boolean, optional
+                      Prints the epoch number and the cost during the training loop
 
             Returns
             -------
@@ -185,13 +188,33 @@ class NeuralNetwork:
 
 
 
-    # TODO
+
     def one_hot_encoding(self, Y, n_classes):
         """
-            Creates one hot encoded reppresentations of the input value Y
-            considering the existence of n_classes.
-        """
+            Creates one hot encoded reppresentations of an input
+            vector indicating the class on each element
 
+            Parameters
+            -------
+            Y : ndarray, shape(observations)
+                Array of labels
+            n_classes : integer
+                        Total number of possible classes
+
+            Returns
+            -------
+            one_hot_Y : ndarray, shape(n_classes, observations)
+                        One-hot encoded reppresentations of Y
+
+        """
+        if np.min(Y)<0 or np.max(Y) > n_classes -1:
+            print("The id of the classes is not valid!")
+            return -1
+
+        Omega = len(Y)
+
+        one_hot_Y = np.zeros((n_classes, Omega))
+        one_hot_Y[Y, np.arange(0,Omega)] = 1
 
         return one_hot_Y
 
@@ -206,7 +229,6 @@ class NeuralNetwork:
                 Array of features
             Y : ndarray, shape(n_outputs, observations)
                 Array of labels
-
             p_train : float, optional
                       Relative proportion of the total data to use
                       for the training set
@@ -215,20 +237,17 @@ class NeuralNetwork:
             -------
             X_train : ndarray, shape(n_inputs, observations*p_train)
                       Array of features for training
-
             Y_train : ndarray, shape(n_ouputs, observations*p_train)
                       Array of labels for training
-
-            X_train : ndarray, shape(n_inputs, observations*(1-p_train))
+            X_test : ndarray, shape(n_inputs, observations*(1-p_train))
                       Array of features for test set
-
-            Y_train : ndarray, shape(n_ouputs, observations*(1-p_train))
+            Y_test : ndarray, shape(n_ouputs, observations*(1-p_train))
                       Array of labels for test set
         """
 
         Omega = X.shape[1]
 
-        indices = np.linspace(0, Omega-1, Omega)
+        indices = np.arange(0, Omega-1)
         idx_train = np.int32(np.random.choice(indices,
                                             int(np.round(p_train*Omega)),
                                             replace=False) )
@@ -366,4 +385,4 @@ class NeuralNetwork:
         return -np.sum(Y*np.log(self.Y_hat + NeuralNetwork.EPS))
 
     def __cost_grad_cross_entropy(self, Y):
-        return -np.sum(Y/ self.Y_hat, keepdims=True)
+        return -np.sum(Y / self.Y_hat, keepdims=True)
