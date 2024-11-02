@@ -62,8 +62,8 @@ class NeuralNetwork:
         """
 
         if X.shape[0] != self.n_inputs:
-            print("The number of features is not equal to the inputs indicated")
-            return 1 #exit()
+            print(f"The number of features ({X.shape[0]}) is not equal to the inputs indicated")
+            return -1 #exit()
 
         A_prev = X
         for layer in self.network:
@@ -96,7 +96,7 @@ class NeuralNetwork:
         last_layer = self.network[-1]
         delta = self.cost_grad(Y) * last_layer.grad_activation_func(last_layer.Z)
         last_layer.dJdb = np.sum(delta, axis=1, keepdims=True)
-        last_layer.dJdW = delta @ last_layer.A.T
+        last_layer.dJdW = np.sum(delta @ last_layer.A.T, axis=1, keepdims=True)
 
         # 2.2 Backpropagation (remaining layers)
         for l in reversed(range(0, self.num_hidden_layers-1)):
@@ -139,11 +139,11 @@ class NeuralNetwork:
         """
         if X.shape[1] != Y.shape[1]:
             print("Non compatible number of observations: X.shape[1] != Y.shape[1]")
-            return 1
+            return -1
 
         if X.shape[0] != self.n_inputs:
-            print("The number of features is not equal to the inputs indicated")
-            return 1
+            print(f"The number of features ({X.shape[0]}) is not equal to the inputs indicated")
+            return -1
 
         Omega_tot = X.shape[1]
         n_chunks = Omega_tot/batch_size
@@ -159,8 +159,7 @@ class NeuralNetwork:
                 self.backpropagation(x,y)
 
                 # Update every layer
-                for layer in self.network:
-
+                for l, layer in enumerate(self.network):
                     # Momentum
 
                     # RMSprop
@@ -208,7 +207,7 @@ class NeuralNetwork:
 
         """
         if np.min(Y)<0 or np.max(Y) > n_classes -1:
-            print("The id of the classes is not valid!")
+            print("Some ids of the classes are not valid!")
             return -1
 
         Omega = len(Y)
@@ -314,11 +313,11 @@ class NeuralNetwork:
                 self.grad_activation_func = self.__grad_sigmoid
 
             elif act_func == "linear":
-                self.activation_func = self.__heavyside
+                self.activation_func = self.__linear
                 self.grad_activation_func = self.__grad_linear
 
             elif act_func == "heavyside":
-                self.activation_func = self.__linear
+                self.activation_func = self.__heavyside
                 self.grad_activation_func = self.__grad_heavyside
 
         # ----------------------------------------------#
@@ -370,6 +369,7 @@ class NeuralNetwork:
     def __cost_grad_norm(self, Y):
         dY =  self.Y_hat - Y
         return np.sum(dY, keepdims=True)/Y.shape[1]
+
 
 
 

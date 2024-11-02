@@ -4,6 +4,9 @@ This is an exercise to build a full neural network from scratch. It use Numpy ve
 The main code is contained in the neurnet class.
 
 
+## Installation
+The code needs Python 3.12 and Numpy 1.26.4. The only additional libary necessary to operate the code is tqdm. Matplotlib is used in the examples for reppresentation of the data.
+
 ## Instructions
 The implementation approach is inspired by the paradigm of TensorFlow + Keras.
 
@@ -47,7 +50,7 @@ INDICATE HOW YOU SHOULD PROVIDE THE VALUES
                     verbose=True)
 ```
 
-The `cost` is an array with the cost for each epoch, useful for reppresenting training curves.
+The `cost` is an array with the cost for each epoch, and this is useful for reppresenting training curves.
 
 | Argument        | Description                |
 |   ---            | ---                        |
@@ -68,8 +71,20 @@ If test or cross-validation data are available, the associated cost can be calcu
     cost = ryc.cost(Y_test)
 ```
 
-The predictions variable `Y_pred` has dimensions given by ($n_{features}\times \Omega_{test}$), where $n_{features}$ is the number indicated in the last layer nad $\Omega_{test}$ is the number of colums of `X_test`. Then, it can be convenient to transpose the data `Y_pred = Y_pred.T` for later usage such that the `Y_pred` is organanised in columns.
+The predictions variable `Y_pred` has dimensions given by ($n_{features}\times \Omega_{test}$), where $n_{features}$ is the number of neurons of the last layer, and $\Omega_{test}$ is the number of observations, and hence colums in `X_test`. Then, it can be convenient to transpose the data `Y_pred = Y_pred.T` for later usage such that the `Y_pred` is organanised in columns.
 
 
 ## Examples
 A tutorial for different typical problem are included in the `tutorial` Jupiter notebook.
+
+
+
+## Tasks
+
+[ ] Implement the softmax function gradient
+[ ] Perform test code, training for multiclass
+[ ] Implement other gradient descendent approaches (e.g, Adam)
+[ ] Analysis of convexity
+[ ] Example many-to-many (vector-valued function of multiple variables)
+[ ] Finish documentation
+
