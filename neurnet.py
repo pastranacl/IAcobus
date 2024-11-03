@@ -368,7 +368,8 @@ class NeuralNetwork:
 
     def __cost_grad_norm(self, Y):
         dY =  self.Y_hat - Y
-        return np.sum(dY, keepdims=True)/Y.shape[1]
+        return dY/Y.shape[1]
+        #return np.sum(dY, keepdims=True)/Y.shape[1]
 
 
 
