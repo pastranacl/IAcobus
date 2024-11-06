@@ -1,4 +1,5 @@
 import numpy as np
+import dill
 from tqdm import tqdm
 
 
@@ -18,7 +19,7 @@ class NeuralNetwork:
 
         # Initial checks
         if len(topology) != len(act_funcs): raise ValueError(f"The number of hidden layers differs form the activation functions")
-        if any(af not in ['relu', 'sigmoid', 'linear', 'heavyside', 'softmax'] for af in act_funcs): raise ValueError(f"Unknown activation function")
+        if any(af not in ['relu', 'sigmoid', 'tanh', 'linear', 'heavyside', 'softmax'] for af in act_funcs): raise ValueError(f"Unknown activation function")
         if cost_func not in ['mse', 'bin-cross-entropy', 'cross-entropy']: raise ValueError(f"Unknown loss function")
 
 
@@ -95,8 +96,9 @@ class NeuralNetwork:
         # 2.1 Backpropagation  (Last layer)
         last_layer = self.network[-1]
         delta = self.cost_grad(Y) * last_layer.grad_activation_func(last_layer.Z)
-        last_layer.dJdb = np.sum(delta, axis=1, keepdims=True)
-        last_layer.dJdW = np.sum(delta @ last_layer.A.T, axis=1, keepdims=True)
+        last_layer.dJdb = np.sum(delta, axis=1, keepdims=True) # NOTE: LOOK THE SUM HERE...
+        last_layer.dJdW = np.sum(delta @ last_layer.A.T, axis=1, keepdims=True) # NOTE: LOOK THE SUM HERE...
+
 
         # 2.2 Backpropagation (remaining layers)
         for l in reversed(range(0, self.num_hidden_layers-1)):
@@ -107,8 +109,9 @@ class NeuralNetwork:
             A_prev = self.network[l-1].A if l > 0 else X
 
             delta = (next_layer.W.T @ delta) * layer.grad_activation_func(layer.Z)
-            layer.dJdb =  np.sum(delta, axis=1, keepdims=True)
+            layer.dJdb =   np.sum(delta, axis=1, keepdims=True) # NOTE: LOOK THE SUM HERE...
             layer.dJdW = delta @ A_prev.T
+
 
 
     def train(self, X, Y, num_epochs=5, batch_size=1, learning_rate=1e-3, verbose = True):
@@ -188,6 +191,153 @@ class NeuralNetwork:
 
 
 
+
+    def __build_network(self):
+        """
+            Create all the layer and neurons of the network considering the
+            specified topolpogy and activation functions.
+        """
+
+        self.network = []
+
+        # Create First layer
+        self.network.append(self.__HiddenLayer(self.n_inputs,
+                                                self.topology[0],
+                                                self.act_funcs[0])      )
+
+        # Create Hidden layers
+        for l in range(1, self.num_hidden_layers):
+            self.network.append(self.__HiddenLayer(self.topology[l-1],
+                                                    self.topology[l],
+                                                    self.act_funcs[l])   )
+
+
+    class __HiddenLayer():
+        """
+            # TODO
+            DOCUMENT THE CLASS
+        """
+
+        def __init__(self, n_neurons_prev, n_neurons, act_func="relu"):
+
+            # Intialisation of the Weight matrix (He initialisation) and the bias vector
+            self.W =  np.random.rand(n_neurons, n_neurons_prev)*np.sqrt(2.0 / n_neurons_prev)
+            self.b = np.random.rand(n_neurons, 1)
+
+
+            # Gradients of the cost with respect to the weigth matrix and bias
+            self.dJdW =  np.zeros((n_neurons, n_neurons_prev))
+            self.dJdb =  np.zeros((n_neurons, 1))
+
+            # The linar activation Z = WA^{l-1} + b parameter and the Activation A
+            # are first created during forward passing. At this stage we do not know
+            # the number of samples, i.e., columns in A and Z.
+
+            # Assign activation function
+            if act_func == "relu":
+                self.activation_func = self.__relu
+                self.grad_activation_func = self.__grad_relu
+
+            elif act_func == "sigmoid":
+                self.activation_func = self.__sigmoid
+                self.grad_activation_func = self.__grad_sigmoid
+
+            elif act_func == "tanh":
+                self.activation_func = self.__tanh
+                self.grad_activation_func = self.__grad_tanh
+
+            elif act_func == "linear":
+                self.activation_func = self.__linear
+                self.grad_activation_func = self.__grad_linear
+
+            elif act_func == "heavyside":
+                self.activation_func = self.__heavyside
+                self.grad_activation_func = self.__grad_heavyside
+
+        # ----------------------------------------------#
+        #                Activation functions           #
+        #-----------------------------------------------#
+        def __linear(self, z):
+            return z
+
+        def __grad_linear(self, z):
+            return np.ones_like(z)
+
+
+        def __relu(self, z):
+            return np.maximum(0.0, z)
+
+        def  __grad_relu(self, z):
+            return  np.where(z > 0., 1.0, 0.0)
+
+
+        def __sigmoid(self, z):
+            return 1/(1 + np.exp(-z))
+
+        def __grad_sigmoid(self, z):
+            return self.__sigmoid(z)*(1 - self.__sigmoid(z))
+
+
+        def __tanh(self, z):
+            return np.tanh(X)
+
+        def __grad_tanh(self, z):
+            return 1-np.tanh(z)**2
+
+
+        def __softmax(self, z):
+            Q = np.sum(np.exp(z), axis=0, keepdims=True)
+            return np.exp(z)/Q
+
+        def __grad_softmax(self, z):
+            S = self.__softmax(z)
+            return self.__softmax(z) * np.ones()
+
+
+        def __heavyside(self, z):
+            return np.where(z > 0., 1.0, 0.0)
+
+        def __grad_heavyside(self, z):
+            return np.where(z == 0., 1.0, 0.0)
+
+
+    # ----------------------------------------------#
+    #                Cost functions                 #
+    #-----------------------------------------------#
+    def __cost_norm(self, Y):
+        dY = Y - self.Y_hat
+        #return np.mean(dY*dY)
+        return np.sum(dY*dY)/(2*Y.shape[1])
+
+    def __cost_grad_norm(self, Y):
+        dY =  self.Y_hat - Y
+        #return dY/Y.shape[1]
+        return np.sum(dY, keepdims=True)/Y.shape[1]
+
+
+
+
+    def __cost_binary_cross_entropy(self, Y):
+        return  np.mean((Y - 1)*np.log(1 - self.Y_hat + NeuralNetwork.EPS) - Y*np.log(self.Y_hat + NeuralNetwork.EPS))
+        #return  np.sum((Y - 1)*np.log(1 - self.Y_hat + NeuralNetwork.EPS) - Y*np.log(self.Y_hat + NeuralNetwork.EPS))/Y.shape[1]
+
+    def __cost_grad_binary_cross_entropy(self, Y):
+        return  ((1 - Y)/(1 - self.Y_hat + NeuralNetwork.EPS) - Y/self.Y_hat)/Y.shape[1]
+        #return  np.sum( (1 - Y)/(1 - self.Y_hat + NeuralNetwork.EPS) - Y/self.Y_hat, keepdims=True )
+
+
+
+    def __cost_cross_entropy(self, Y):
+        return -np.sum(Y*np.log(self.Y_hat + NeuralNetwork.EPS))/Y.shape[1]
+
+    def __cost_grad_cross_entropy(self, Y):
+        return -(Y / self.Y_hat)/Y.shape[1]
+
+    """
+        Accesory functionalities
+    """
+
+
     def one_hot_encoding(self, Y, n_classes):
         """
             Creates one hot encoded reppresentations of an input
@@ -262,128 +412,32 @@ class NeuralNetwork:
         return X_train, Y_train, X_test, Y_test
 
 
-    def __build_network(self):
+    def export(self, file_name):
         """
-            Create all the layer and neurons of the network considering the
-            specified topolpogy and activation functions.
+            Save a pickled copy of the class
+
+            Parameters
+            ----------
+            file_name : string
+                        Path and filename of the pickle pkl file to be saved
         """
-
-        self.network = []
-
-        # Create First layer
-        self.network.append(self.__HiddenLayer(self.n_inputs,
-                                                self.topology[0],
-                                                self.act_funcs[0])      )
-
-        # Create Hidden layers
-        for l in range(1, self.num_hidden_layers):
-            self.network.append(self.__HiddenLayer(self.topology[l-1],
-                                                    self.topology[l],
-                                                    self.act_funcs[l])   )
+        with open(file_name, 'wb') as f:
+            dill.dump(self, f)
 
 
-    class __HiddenLayer():
+    @classmethod
+    def load(cls, file_name):
         """
-            # TODO
-            DOCUMENT THE CLASS
+            Load (unpickle) a pickled copy of the class
+            (the classmethod decorator allows its usage without
+            an instance, i.e., a precreated object
+
+            Parameters
+            ----------
+            file_name : string
+                        Path and filename of the .pkl file to load
+
         """
-
-        def __init__(self, n_neurons_prev, n_neurons, act_func="relu"):
-
-            # Intialisation of the Weight matrix (He initialisation) and the bias vector
-            self.W =  np.random.rand(n_neurons, n_neurons_prev)*np.sqrt(2.0 / n_neurons_prev)
-            self.b = np.random.rand(n_neurons, 1)
-
-
-            # Gradients of the cost with respect to the weigth matrix and bias
-            self.dJdW =  np.zeros((n_neurons, n_neurons_prev))
-            self.dJdb =  np.zeros((n_neurons, 1))
-
-            # The linar activation Z = WA^{l-1} + b parameter and the Activation A
-            # are first created during forward passing. At this stage we do not know
-            # the number of samples, i.e., columns in A and Z.
-
-            # Assign activation function
-            if act_func == "relu":
-                self.activation_func = self.__relu
-                self.grad_activation_func = self.__grad_relu
-
-            elif act_func == "sigmoid":
-                self.activation_func = self.__sigmoid
-                self.grad_activation_func = self.__grad_sigmoid
-
-            elif act_func == "linear":
-                self.activation_func = self.__linear
-                self.grad_activation_func = self.__grad_linear
-
-            elif act_func == "heavyside":
-                self.activation_func = self.__heavyside
-                self.grad_activation_func = self.__grad_heavyside
-
-        # ----------------------------------------------#
-        #                Activation functions           #
-        #-----------------------------------------------#
-        def __linear(self, z):
-            return z
-
-        def __grad_linear(self, z):
-            return np.ones_like(z)
-
-
-        def __relu(self, z):
-            return np.maximum(0.0, z)
-
-        def  __grad_relu(self, z):
-            return  np.where(z > 0., 1.0, 0.0)
-
-
-        def __sigmoid(self, z):
-            return 1/(1 + np.exp(-z))
-
-        def __grad_sigmoid(self, z):
-            return self.__sigmoid(z)*(1 - self.__sigmoid(z))
-
-
-        def __softmax(self, z):
-            Q = np.sum(z, axis=0, keepdims=True)
-            return z/Q
-
-        def __grad_softmax(self, z):
-            return 1
-
-
-        def __heavyside(self, z):
-            return np.where(z > 0., 1.0, 0.0)
-
-        def __grad_heavyside(self, z):
-            return np.where(z == 0., 1.0, 0.0)
-
-
-    # ----------------------------------------------#
-    #                Cost functions                 #
-    #-----------------------------------------------#
-    def __cost_norm(self, Y):
-        dY = Y - self.Y_hat
-        return np.sum(dY*dY)/(2*Y.shape[1])
-
-    def __cost_grad_norm(self, Y):
-        dY =  self.Y_hat - Y
-        return dY/Y.shape[1]
-        #return np.sum(dY, keepdims=True)/Y.shape[1]
-
-
-
-
-    def __cost_binary_cross_entropy(self, Y):
-        return  np.sum((Y - 1)*np.log(1 - self.Y_hat + NeuralNetwork.EPS) - Y*np.log(self.Y_hat + NeuralNetwork.EPS))
-
-    def __cost_grad_binary_cross_entropy(self, Y):
-        return  np.sum( (1 - Y)/(1 - self.Y_hat + NeuralNetwork.EPS) - Y/self.Y_hat, keepdims=True )
-
-
-
-    def __cost_cross_entropy(self, Y):
-        return -np.sum(Y*np.log(self.Y_hat + NeuralNetwork.EPS))
-
-    def __cost_grad_cross_entropy(self, Y):
-        return -np.sum(Y / self.Y_hat, keepdims=True)
+        #ryc = neurnet.load('my_instance.pkl')  # Load instance
+        with open(file_name, 'rb') as f:
+            return dill.load(f)

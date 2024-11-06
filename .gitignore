@@ -1,5 +1,6 @@
 __pycache__/*
 tests.py
+*.pkl
 *.swp
 *.kate-swp
 *.fuse_*

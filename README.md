@@ -73,6 +73,20 @@ If test or cross-validation data are available, the associated cost can be calcu
 
 The predictions variable `Y_pred` has dimensions given by ($n_{features}\times \Omega_{test}$), where $n_{features}$ is the number of neurons of the last layer, and $\Omega_{test}$ is the number of observations, and hence colums in `X_test`. Then, it can be convenient to transpose the data `Y_pred = Y_pred.T` for later usage such that the `Y_pred` is organanised in columns.
 
+5. **Saving the network**. It is convenient to save the network object to continue training the data later or to use an alredy trained network:
+
+```
+    ryc.export("trained_network.pkl")
+```
+
+An already created and saved network with the `export` function can be loaded in a completely independent and new instance as:
+```
+    from neurnet import NeuralNetwork
+
+    rycTrained = NeuralNetwork.load("trained_network.pkl")
+```
+
+This allow us to continue training the network or to call it for feedforward to obtain predictions. However, the topology of the network is created at inialisation and can not be modified.
 
 ## Examples
 A tutorial for different typical problem are included in the `tutorial` Jupiter notebook.
@@ -84,7 +98,5 @@ A tutorial for different typical problem are included in the `tutorial` Jupiter 
 [ ] Implement the softmax function gradient
 [ ] Perform test code, training for multiclass
 [ ] Implement other gradient descendent approaches (e.g, Adam)
-[ ] Analysis of convexity
-[ ] Example many-to-many (vector-valued function of multiple variables)
 [ ] Finish documentation
 
