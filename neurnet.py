@@ -95,9 +95,9 @@ class NeuralNetwork:
 
         # 2.1 Backpropagation  (Last layer)
         last_layer = self.network[-1]
-        delta = self.cost_grad(Y) * last_layer.grad_activation_func(last_layer.Z)
-        last_layer.dJdb = np.sum(delta, axis=1, keepdims=True) # NOTE: LOOK THE SUM HERE...
-        last_layer.dJdW = np.sum(delta @ last_layer.A.T, axis=1, keepdims=True)
+        delta = self.cost_grad(Y)[:,np.newaxis,:] * last_layer.grad_activation_func(last_layer.Z)
+        last_layer.dJdb = np.sum(delta, axis=2, keepdims=True) # NOTE: LOOK THE SUM HERE...
+        last_layer.dJdW = np.sum(delta @ last_layer.A.T, axis=2)
 
 
         # 2.2 Backpropagation (remaining layers)
@@ -110,7 +110,7 @@ class NeuralNetwork:
 
             delta = (next_layer.W.T @ delta) * layer.grad_activation_func(layer.Z)
             layer.dJdb =   np.sum(delta, axis=1, keepdims=True) # NOTE: LOOK THE SUM HERE...
-            layer.dJdW =   np.sum(delta @ A_prev.T, axis=1, keepdims=True)
+            layer.dJdW =   np.sum(delta @ A_prev.T, axis=2)
 
 
 
@@ -154,6 +154,7 @@ class NeuralNetwork:
         X_batches = np.array_split(X, n_chunks, axis=1)
         Y_batches = np.array_split(Y, n_chunks, axis=1)
 
+        norm_factor_batch_num = 0
         cost_epoch = np.zeros(num_epochs)
 
         for epoch in tqdm(range(0, num_epochs)):
@@ -176,10 +177,11 @@ class NeuralNetwork:
                 # Assign the cost to the epoch
                 # It corresponds to before the update, since we did not call forward prop yet
                 cost_epoch[epoch] += self.cost(y)
+                norm_factor_batch_num += (1./x.shape[1])
 
 
             # Average cost for the Omega observations
-            cost_epoch[epoch] /= Omega_tot
+            cost_epoch[epoch] /= norm_factor_batch_num
 
             # Update progress bar
             if verbose == True:
@@ -254,6 +256,10 @@ class NeuralNetwork:
                 self.activation_func = self.__heavyside
                 self.grad_activation_func = self.__grad_heavyside
 
+            elif act_func == "softmax":
+                self.activation_func = self.__softmax
+                self.grad_activation_func = self.__grad_softmax
+
 
         #   Activation functions
         def __linear(self, z):
@@ -290,11 +296,13 @@ class NeuralNetwork:
 
         def __grad_softmax(self, z):
             S = self.__softmax(z)
+
             S_omega =  S[:, :, np.newaxis]
-            diag_terms = S_omega * np.eye(z.shape[0])[np.newaxis, :, :]
-            outer =  S_omega * S_omega.transpose(0, 2, 1)
+            diag= S_omega * np.eye((S.shape[0]))[:,np.newaxis,:]
+
+            outer =  S_omega * S_omega.transpose(2,1,0)
             gr = diag - outer
-            return gr
+            return gr.transpose(0,2,1)
 
 
         def __heavyside(self, z):
