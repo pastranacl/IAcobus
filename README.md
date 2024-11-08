@@ -5,7 +5,10 @@ The main code is contained in the neurnet class.
 
 
 ## Installation
-The code needs Python 3.12 and Numpy 1.26.4. The only additional libary necessary to operate the code is tqdm. Matplotlib is used in the examples for reppresentation of the data.
+The code needs Python 3.12, Numpy 1.26.4.
+dill pickle
+The only additional libary necessary to operate the code is tqdm.
+Matplotlib is used in the examples for reppresentation of the data.
 
 ## Instructions
 The implementation approach is inspired by the paradigm of TensorFlow + Keras.

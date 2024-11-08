@@ -97,7 +97,7 @@ class NeuralNetwork:
         last_layer = self.network[-1]
         delta = self.cost_grad(Y) * last_layer.grad_activation_func(last_layer.Z)
         last_layer.dJdb = np.sum(delta, axis=1, keepdims=True) # NOTE: LOOK THE SUM HERE...
-        last_layer.dJdW = np.sum(delta @ last_layer.A.T, axis=1, keepdims=True) # NOTE: LOOK THE SUM HERE...
+        last_layer.dJdW = np.sum(delta @ last_layer.A.T, axis=1, keepdims=True)
 
 
         # 2.2 Backpropagation (remaining layers)
@@ -110,7 +110,7 @@ class NeuralNetwork:
 
             delta = (next_layer.W.T @ delta) * layer.grad_activation_func(layer.Z)
             layer.dJdb =   np.sum(delta, axis=1, keepdims=True) # NOTE: LOOK THE SUM HERE...
-            layer.dJdW = delta @ A_prev.T
+            layer.dJdW =   np.sum(delta @ A_prev.T, axis=1, keepdims=True)
 
 
 
@@ -254,9 +254,8 @@ class NeuralNetwork:
                 self.activation_func = self.__heavyside
                 self.grad_activation_func = self.__grad_heavyside
 
-        # ----------------------------------------------#
-        #                Activation functions           #
-        #-----------------------------------------------#
+
+        #   Activation functions
         def __linear(self, z):
             return z
 
@@ -291,7 +290,11 @@ class NeuralNetwork:
 
         def __grad_softmax(self, z):
             S = self.__softmax(z)
-            return self.__softmax(z) * np.ones()
+            S_omega =  S[:, :, np.newaxis]
+            diag_terms = S_omega * np.eye(z.shape[0])[np.newaxis, :, :]
+            outer =  S_omega * S_omega.transpose(0, 2, 1)
+            gr = diag - outer
+            return gr
 
 
         def __heavyside(self, z):
@@ -301,19 +304,16 @@ class NeuralNetwork:
             return np.where(z == 0., 1.0, 0.0)
 
 
-    # ----------------------------------------------#
-    #                Cost functions                 #
-    #-----------------------------------------------#
+    #   Cost functions
     def __cost_norm(self, Y):
         dY = Y - self.Y_hat
-        #return np.mean(dY*dY)
-        return np.sum(dY*dY)/(2*Y.shape[1])
+        return np.mean(dY*dY)*0.5
+        #return np.sum(dY*dY)/(2*Y.shape[1])
 
     def __cost_grad_norm(self, Y):
         dY =  self.Y_hat - Y
-        #return dY/Y.shape[1]
-        return np.sum(dY, keepdims=True)/Y.shape[1]
-
+        return 0.5*dY/Y.shape[1]
+        #return np.sum(dY, axis=1, keepdims=True)/Y.shape[1]
 
 
 
@@ -323,7 +323,7 @@ class NeuralNetwork:
 
     def __cost_grad_binary_cross_entropy(self, Y):
         return  ((1 - Y)/(1 - self.Y_hat + NeuralNetwork.EPS) - Y/self.Y_hat)/Y.shape[1]
-        #return  np.sum( (1 - Y)/(1 - self.Y_hat + NeuralNetwork.EPS) - Y/self.Y_hat, keepdims=True )
+        #return  np.sum( (1 - Y)/(1 - self.Y_hat + NeuralNetwork.EPS) - Y/self.Y_hat, axis=1, keepdims=True )
 
 
 
@@ -333,10 +333,12 @@ class NeuralNetwork:
     def __cost_grad_cross_entropy(self, Y):
         return -(Y / self.Y_hat)/Y.shape[1]
 
+
+
+
     """
         Accesory functionalities
     """
-
 
     def one_hot_encoding(self, Y, n_classes):
         """
