@@ -95,9 +95,11 @@ class NeuralNetwork:
 
         # 2.1 Backpropagation  (Last layer)
         last_layer = self.network[-1]
-        delta = self.cost_grad(Y)[:,np.newaxis,:] * last_layer.grad_activation_func(last_layer.Z)
-        last_layer.dJdb = np.sum(delta, axis=2, keepdims=True) # NOTE: LOOK THE SUM HERE...
-        last_layer.dJdW = np.sum(delta @ last_layer.A.T, axis=2)
+        next_to_last_layer = self.network[-2]
+        #delta = self.cost_grad(Y)[:,np.newaxis,:] * last_layer.grad_activation_func(last_layer.Z)
+        delta = self.cost_grad(Y) * last_layer.grad_activation_func(last_layer.Z)
+        last_layer.dJdb = np.sum(delta, axis=1, keepdims=True) # NOTE: LOOK THE SUM HERE...
+        last_layer.dJdW = delta @ next_to_last_layer.A.T
 
 
         # 2.2 Backpropagation (remaining layers)
@@ -110,7 +112,7 @@ class NeuralNetwork:
 
             delta = (next_layer.W.T @ delta) * layer.grad_activation_func(layer.Z)
             layer.dJdb =   np.sum(delta, axis=1, keepdims=True) # NOTE: LOOK THE SUM HERE...
-            layer.dJdW =   np.sum(delta @ A_prev.T, axis=2)
+            layer.dJdW =   delta @ A_prev.T
 
 
 
@@ -177,11 +179,12 @@ class NeuralNetwork:
                 # Assign the cost to the epoch
                 # It corresponds to before the update, since we did not call forward prop yet
                 cost_epoch[epoch] += self.cost(y)
-                norm_factor_batch_num += (1./x.shape[1])
+                norm_factor_batch_num += 1./x.shape[1]
 
 
             # Average cost for the Omega observations
-            cost_epoch[epoch] /= norm_factor_batch_num
+            cost_epoch[epoch] /= Omega_tot # norm_factor_batch_num
+            norm_factor_batch_num = 0
 
             # Update progress bar
             if verbose == True:
@@ -315,13 +318,13 @@ class NeuralNetwork:
     #   Cost functions
     def __cost_norm(self, Y):
         dY = Y - self.Y_hat
-        return np.mean(dY*dY)*0.5
-        #return np.sum(dY*dY)/(2*Y.shape[1])
+        #return np.mean(dY*dY)*0.5
+        return np.sum(dY*dY)/(2*Y.shape[1])
 
     def __cost_grad_norm(self, Y):
         dY =  self.Y_hat - Y
-        return 0.5*dY/Y.shape[1]
-        #return np.sum(dY, axis=1, keepdims=True)/Y.shape[1]
+        #return 0.5*dY/Y.shape[1]
+        return np.sum(dY, axis=1, keepdims=True)/Y.shape[1]
 
 
 
