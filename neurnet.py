@@ -116,6 +116,13 @@ class NeuralNetwork:
 
 
 
+    def gradient_descendent():
+        return 0
+
+    def adam():
+        return 0
+
+
     def train(self, X, Y, num_epochs=5, batch_size=1, learning_rate=1e-3, verbose = True):
         """
             Training of the network using backpropagation
@@ -151,20 +158,16 @@ class NeuralNetwork:
             return -1
 
         Omega_tot = X.shape[1]
-        n_chunks = Omega_tot/batch_size
-
-        X_batches = np.array_split(X, n_chunks, axis=1)
-        Y_batches = np.array_split(Y, n_chunks, axis=1)
-
-        norm_factor_batch_num = 0
         cost_epoch = np.zeros(num_epochs)
 
         for epoch in tqdm(range(0, num_epochs)):
+
+            # Generate batches
+            X_batches,  Y_batches = self.__gen_batches(X, Y, batch_size)
+
             for x, y in zip(X_batches,  Y_batches):
-
                 self.backpropagation(x,y)
-
-                # Update every layer
+                cost_epoch[epoch] += self.cost(y)*x.shape[1]    # Weighted sum
                 for l, layer in enumerate(self.network):
                     # Momentum
 
@@ -176,24 +179,51 @@ class NeuralNetwork:
                     layer.W -= learning_rate * layer.dJdW
                     layer.b -= learning_rate * layer.dJdb
 
-                # Assign the cost to the epoch
-                # It corresponds to before the update, since we did not call forward prop yet
-                cost_epoch[epoch] += self.cost(y)
-                norm_factor_batch_num += 1./x.shape[1]
-
 
             # Average cost for the Omega observations
-            cost_epoch[epoch] /= Omega_tot # norm_factor_batch_num
-            norm_factor_batch_num = 0
+            cost_epoch[epoch] /=  Omega_tot
 
             # Update progress bar
-            if verbose == True:
+            if epoch %10 == 0 and verbose == True:
                 tqdm.write(f" Epoch {epoch}/{num_epochs}; Cost: {cost_epoch[epoch]}")
 
 
         return cost_epoch
 
 
+    def __gen_batches(self, X, Y, batch_size):
+        """
+            Generate batches, shuffling and spliting the full data set
+
+            Parameters
+            ----------
+
+            X : ndarray, shape(n_inputs, observations)
+                Array of input features
+
+            Y : ndarray, shape(n_inputs, observations)
+                Array of output/labels
+
+            batch_size : int
+                        Number of observations per batch
+            Returns
+            -------
+            X_batches : ndarray, shape(n_inputs, observations, batch_size)
+                        Array of batched data with the features for training
+
+            Y_batches : ndarray, shape(n_inputs, observations, batch_size)
+                        Array of batched data outputs for training
+
+        """
+        Omega_tot = X.shape[1]
+        n_chunks = Omega_tot/batch_size
+        indices = np.arange(Omega_tot)
+        np.random.shuffle(indices)
+
+        X_batches = np.array_split(X[:,indices], n_chunks, axis=1)
+        Y_batches = np.array_split(Y[:,indices], n_chunks, axis=1)
+
+        return X_batches, Y_batches
 
 
 
@@ -425,6 +455,7 @@ class NeuralNetwork:
         return X_train, Y_train, X_test, Y_test
 
 
+
     def export(self, file_name):
         """
             Save a pickled copy of the class
@@ -436,6 +467,7 @@ class NeuralNetwork:
         """
         with open(file_name, 'wb') as f:
             dill.dump(self, f)
+
 
 
     @classmethod
