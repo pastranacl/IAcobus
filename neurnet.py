@@ -116,21 +116,74 @@ class NeuralNetwork:
 
 
 
-    def __gradient_descendent(self, learning_rate):
+    def __gradient_descendent(self, learning_rate, *args, **kwargs):
         """
-                Basic gradient descendent algorithm to update network parameters
+            Basic gradient descendent algorithm to update network parameters
         """
+        def gd_update(*args, **kwargs):
+            for l, layer in enumerate(self.network):
+                layer.W -= learning_rate * layer.dJdW
+                layer.b -= learning_rate * layer.dJdb
+
+        return gd_update
+
+
+    def __adam(self, learning_rate, beta1=0.9, beta2=0.999):
+        """
+
+        """
+        # Create the intermediate parameters
+        W_ms = []
+        b_ms = []
+        W_vs = []
+        b_vs = []
+
         for l, layer in enumerate(self.network):
-            layer.W -= learning_rate * layer.dJdW
-            layer.b -= learning_rate * layer.dJdb
+            W_ms.append(np.zeros_like(layer.dJdW))
+            b_ms.append(np.zeros_like(layer.dJdb))
+
+            W_vs.append(np.zeros_like(layer.dJdW))
+            b_vs.append(np.zeros_like(layer.dJdb))
 
 
+        def adam_update(t):
+            """
 
-    def adam():
-        return 0
+            """
+
+            # Keep state persistent across calls
+            nonlocal W_ms, b_ms, W_vs, b_vs
 
 
-    def train(self, X, Y, num_epochs=5, batch_size=1, learning_rate=1e-3, algorithm='gd', verbose = True):
+            for l, layer in enumerate(self.network):
+
+                # First moment estimate
+                W_ms[l] = beta1*W_ms[l] + (1-beta1)*layer.dJdW
+                b_ms[l] = beta1*b_ms[l] + (1-beta1)*layer.dJdb
+
+                # Second raw moment estimates
+                W_vs[l] = beta2*W_vs[l] + (1-beta2)*layer.dJdW**2
+                b_vs[l] = beta2*b_vs[l] + (1-beta2)*layer.dJdb**2
+
+                # Bias corrections
+                dJdW_m_hat =  W_ms[l]/(1-beta1**(t+1))
+                dJdb_m_hat =  b_ms[l]/(1-beta1**(t+1))
+
+                dJdW_v_hat =  W_vs[l]/(1-beta2**(t+1))
+                dJdb_v_hat =  b_vs[l]/(1-beta2**(t+1))
+
+
+                # Update Parameters
+                #layer.dJdW -= learning_rate*dJdW_m_hat/(np.sqrt(dJdW_v_hat) + self.EPS)
+                #layer.dJdb -= learning_rate*dJdb_m_hat/(np.sqrt(dJdb_v_hat) + self.EPS)
+                layer.dJdW -= learning_rate*layer.dJdW
+                layer.dJdb -= learning_rate*layer.dJdb
+
+
+        return adam_update
+
+
+    def train(self, X, Y, num_epochs=5, batch_size=1, learning_rate=1e-3, algorithm='adam', verbose = True):
         """
             Training of the network using backpropagation
 
@@ -165,7 +218,9 @@ class NeuralNetwork:
             return -1
 
         if algorithm == 'gd':
-            minimiser = self. __gradient_descendent
+            minimiser = self.__gradient_descendent(learning_rate=learning_rate)
+        elif algorithm == 'adam':
+            minimiser = self.__adam(learning_rate=learning_rate)
 
 
         Omega_tot = X.shape[1]
@@ -180,14 +235,14 @@ class NeuralNetwork:
                 self.backpropagation(x,y)
                 cost_epoch[epoch] += self.cost(y)*x.shape[1]    # Weighted sum
 
-                minimiser(learning_rate)
+                minimiser(epoch)
 
 
             # Average cost for the Omega observations
             cost_epoch[epoch] /=  Omega_tot
 
             # Update progress bar
-            if epoch %10 == 0 and verbose == True:
+            if epoch % 10 == 0 and verbose == True:
                 tqdm.write(f" Epoch {epoch}/{num_epochs}; Cost: {cost_epoch[epoch]}")
 
 
