@@ -1,7 +1,8 @@
-# Neural Network from Scratch
+# IAcobus
 
-This is an exercise to build a full neural network from scratch. It use Numpy vectorisation for an optimal performance.
-The main code is contained in the neurnet class.
+IAcobus is a fully functional library to build fully connected neural networks. It takes its name from the famous Spanish neuroscientist Santiago Ramón y Cajal, Nobel Prize in Physiology and Medicine in 1906, and the first person to identify the neurons of the brain. (Santiago is the Spanish variant of the latinaised name (Saint) Iacobus).
+
+This project started as an exercise to undestand the implementation of neural network from scratch, including batch backpropagation and training. The code make use of Numpy vectorisation for optimal speed. The overall design is not centered on performance, but on the clarity of the steps. For full mathematical details see the publication REF.
 
 
 ## Installation
@@ -34,7 +35,7 @@ The implementation approach is inspired by the paradigm of TensorFlow + Keras.
 |   ---            | ---                        |
 | `n_inputs`          | int. Number of features |
 | `topology` | Array containing the number of neurons on each layer |
-| `activation_funcs` | Array of strings for the activation function of each layer. The dimensions must coincide with that of `topology`. The activation functions available are the Heavyside `heavyside`, the rectifying linear unit ReLU `relu`, the sigmoid `sigmoid`, and the softmax `softmax`   |
+| `activation_funcs` | Array of strings for the activation function of each layer. The dimensions must coincide with that of `topology`. The activation functions available are the Heavyside `heavyside`, the rectifying linear unit ReLU `relu`, the sigmoid `sigmoid`, the hyperbolic tagent `tanh`, and the softmax function `softmax`   |
 | `cost_func`| String indicating the cost function to use. The options are the mean-squared error `mse`, and binary cross entropy `bin-cross-ent` |
 
 2. **Preprocessing of data:** Traning and validation, description of sizes One hot encoding

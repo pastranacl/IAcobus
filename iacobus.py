@@ -1,5 +1,5 @@
 """
-    Iacobus
+    IAcobus
 
     Author: Cesar L. Pastrana
     Date: 2024
@@ -30,7 +30,7 @@ import dill
 from tqdm import tqdm
 
 
-class NeuralNetwork:
+class IAcobus:
     """
 
 
@@ -153,33 +153,6 @@ class NeuralNetwork:
 
         return gd_update
 
-
-    def __adaptative_gradient_descendent(self, X, Y, learning_rate=1e-3, *args, **kwargs):
-
-        theta = 1e12
-
-        lambda_W = learning_rate
-        lambda_b = learning_rate
-
-        for l, layer in enumerate(self.network):
-            layer.W -= learning_rate * layer.dJdW
-            layer.b -= learning_rate * layer.dJdb
-
-
-        def agd_update():
-
-
-            for l, layer in enumerate(self.network):
-
-                lambda_W[l] = np.min( np.sqrt(1 + theta_W[l])*lambda_W[l] ,
-                                     )
-
-                layer.W -= lambda_W[l] * layer.dJdW
-                theta_W[l] = lambda_W[l]/lambda_W_pre[l]
-
-
-
-                layer.b -= lambda_b[l] * layer.dJdb
 
     def __gradient_descendent_momentum(self, learning_rate=1e-3, beta=0.9):
         """
@@ -420,8 +393,13 @@ class NeuralNetwork:
 
     class __HiddenLayer():
         """
-            # TODO
-            DOCUMENT THE CLASS
+            __HiddenLayer is private class that creates a layer of neurons, attenting to
+            the number of neurons of the previous layer. The the weigths
+
+
+
+
+
         """
 
         def __init__(self, n_neurons_prev, n_neurons, act_func="relu"):
@@ -530,17 +508,17 @@ class NeuralNetwork:
 
 
     def __cost_binary_cross_entropy(self, Y):
-        return  np.mean((Y - 1)*np.log(1 - self.Y_hat + NeuralNetwork.EPS) - Y*np.log(self.Y_hat + NeuralNetwork.EPS))
+        return  np.mean((Y - 1)*np.log(1 - self.Y_hat + self.EPS) - Y*np.log(self.Y_hat + self.EPS))
         #return  np.sum((Y - 1)*np.log(1 - self.Y_hat + NeuralNetwork.EPS) - Y*np.log(self.Y_hat + NeuralNetwork.EPS))/Y.shape[1]
 
     def __cost_grad_binary_cross_entropy(self, Y):
-        return  ((1 - Y)/(1 - self.Y_hat + NeuralNetwork.EPS) - Y/self.Y_hat)/Y.shape[1]
+        return  ((1 - Y)/(1 - self.Y_hat + self.EPS) - Y/self.Y_hat)/Y.shape[1]
         #return  np.sum( (1 - Y)/(1 - self.Y_hat + NeuralNetwork.EPS) - Y/self.Y_hat, axis=1, keepdims=True )
 
 
 
     def __cost_cross_entropy(self, Y):
-        return -np.sum(Y*np.log(self.Y_hat + NeuralNetwork.EPS))/Y.shape[1]
+        return -np.sum(Y*np.log(self.Y_hat + self.EPS))/Y.shape[1]
 
     def __cost_grad_cross_entropy(self, Y):
         return -(Y / self.Y_hat)/Y.shape[1]
