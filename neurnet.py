@@ -1,3 +1,29 @@
+"""
+    <project name or script purpose>
+
+    Author: Cesar L. Pastrana
+    Date: 2024
+    License: GNU General Public License v3.0 (GPL-3.0)
+
+    Description:
+    Library implementing a neural network at CPU level relying solely on Numpy
+
+    Copyright (c) 2024 Cesar L.Pastrana
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <https://www.gnu.org/licenses/>.
+"""
+
 import numpy as np
 import dill
 from tqdm import tqdm
@@ -56,7 +82,6 @@ class NeuralNetwork:
 
             Returns
             -------
-
             Y_hat :  np.array[n_outputs, samples]
                     Prediction given by the network
 
@@ -116,7 +141,7 @@ class NeuralNetwork:
 
 
 
-    def __gradient_descendent(self, learning_rate, *args, **kwargs):
+    def __gradient_descendent(self, learning_rate=1e-3, *args, **kwargs):
         """
             Basic gradient descendent algorithm to update network parameters
         """
@@ -128,17 +153,35 @@ class NeuralNetwork:
         return gd_update
 
 
-    def __adam(self, learning_rate, beta1=0.9, beta2=0.999):
+    def __adam(self, learning_rate=1e-3, beta1=0.9, beta2=0.999):
         """
 
+            Python closure function that implement the Adam optimiser
+
+            Parameters
+            ----------
+                learning_rate : float
+                                Basal lerning rate, alpha in the original paper
+                beta1 : float
+                        Exponential decay rates for the first moment estimate
+                beta2 : float
+                        Exponential decay rates for the second moment estimate
+
+            Returns
+            -------
+                adam_update : function
+                              Update rule to be used in the training loop
+
         """
-        # Create the intermediate parameters
+
+        # Initialise the first and second moment arrays/vector for the weighs and biases
         W_ms = []
         b_ms = []
         W_vs = []
         b_vs = []
 
         for l, layer in enumerate(self.network):
+
             W_ms.append(np.zeros_like(layer.dJdW))
             b_ms.append(np.zeros_like(layer.dJdb))
 
@@ -148,14 +191,20 @@ class NeuralNetwork:
 
         def adam_update(t):
             """
+                Implements the Adam algorithm with bias correction as
+                described in ADAM: A Method for Stochastic Optimization
+                by Kigma D.P and Ba J.L. ICLR (2015)
 
+                Parameters
+                -----------
+                t   : int.
+                      Epoch number for the bias correction
             """
 
             # Keep state persistent across calls
             nonlocal W_ms, b_ms, W_vs, b_vs
-
-
             for l, layer in enumerate(self.network):
+
 
                 # First moment estimate
                 W_ms[l] = beta1*W_ms[l] + (1-beta1)*layer.dJdW
@@ -172,18 +221,16 @@ class NeuralNetwork:
                 dJdW_v_hat =  W_vs[l]/(1-beta2**(t+1))
                 dJdb_v_hat =  b_vs[l]/(1-beta2**(t+1))
 
-
                 # Update Parameters
-                #layer.dJdW -= learning_rate*dJdW_m_hat/(np.sqrt(dJdW_v_hat) + self.EPS)
-                #layer.dJdb -= learning_rate*dJdb_m_hat/(np.sqrt(dJdb_v_hat) + self.EPS)
-                layer.dJdW -= learning_rate*layer.dJdW
-                layer.dJdb -= learning_rate*layer.dJdb
+                layer.W  -= learning_rate*dJdW_m_hat/(np.sqrt(dJdW_v_hat) + self.EPS)
+                layer.b -= learning_rate*dJdb_m_hat/(np.sqrt(dJdb_v_hat) + self.EPS)
 
 
         return adam_update
 
 
-    def train(self, X, Y, num_epochs=5, batch_size=1, learning_rate=1e-3, algorithm='adam', verbose = True):
+
+    def train(self, X, Y, num_epochs=5, batch_size=1, learning_rate=1e-3, algorithm='adam', verbose = True, **kwargs):
         """
             Training of the network using backpropagation
 
@@ -217,10 +264,14 @@ class NeuralNetwork:
             print(f"The number of features ({X.shape[0]}) is not equal to the inputs indicated")
             return -1
 
+        if algorithm not in ['gd', 'adam']:
+            print("The specified optimisation algorithm is not valid.")
+            return -1
+
         if algorithm == 'gd':
             minimiser = self.__gradient_descendent(learning_rate=learning_rate)
         elif algorithm == 'adam':
-            minimiser = self.__adam(learning_rate=learning_rate)
+            minimiser = self.__adam(learning_rate=learning_rate, **kwargs)
 
 
         Omega_tot = X.shape[1]
@@ -234,9 +285,7 @@ class NeuralNetwork:
             for x, y in zip(X_batches,  Y_batches):
                 self.backpropagation(x,y)
                 cost_epoch[epoch] += self.cost(y)*x.shape[1]    # Weighted sum
-
                 minimiser(epoch)
-
 
             # Average cost for the Omega observations
             cost_epoch[epoch] /=  Omega_tot

@@ -50,7 +50,9 @@ INDICATE HOW YOU SHOULD PROVIDE THE VALUES
                     num_epochs=5000,
                     batch_size=10,
                     learning_rate=1e-6,
-                    verbose=True)
+                    algorithm='adam',
+                    verbose=True,
+                    **kwargs)
 ```
 
 The `cost` is an array with the cost for each epoch, and this is useful for reppresenting training curves.
@@ -59,9 +61,10 @@ The `cost` is an array with the cost for each epoch, and this is useful for repp
 |   ---            | ---                        |
 | `num_epochs`     | int. The number of optimisation steps, considering as optimisation step the full pass to the data set |
 | `batch_size`      | int. Samples to use. For a total number of $\Omega$ samples, and batch size $\omega$, the total number of batches is simply $\Omega/\omega$. Since this library works on the CPU, fitting the data on memory is not a problem, and then this hyperparameter is not so critical. |
-| `learning_rate` | float. Initial learning rate for the optimiser |
+| `learning_rate` | float. Initial learning rate for the optimiser. |
+| `algorithm` | string. Optimisation algorithm to use. The options are `adam`, and  gradient descendent `gd`.  |
 | `verbose` | bool. Prints the epoch number and the cost during training. |
-
+| `**kwargs` | floats. Additional parameters to pass to the minimisation algorithm. In particular the $\beta_1$ and $\beta_2$ of the Adam algorithm can be selected as `beta1=0.9` and `beta2=0.999`. |
 
 4. **Forward propagation:** To obtain predictions form an input array `X_test` the `forward` function is called:
 
