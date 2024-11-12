@@ -116,14 +116,21 @@ class NeuralNetwork:
 
 
 
-    def gradient_descendent():
-        return 0
+    def __gradient_descendent(self, learning_rate):
+        """
+                Basic gradient descendent algorithm to update network parameters
+        """
+        for l, layer in enumerate(self.network):
+            layer.W -= learning_rate * layer.dJdW
+            layer.b -= learning_rate * layer.dJdb
+
+
 
     def adam():
         return 0
 
 
-    def train(self, X, Y, num_epochs=5, batch_size=1, learning_rate=1e-3, verbose = True):
+    def train(self, X, Y, num_epochs=5, batch_size=1, learning_rate=1e-3, algorithm='gd', verbose = True):
         """
             Training of the network using backpropagation
 
@@ -157,6 +164,10 @@ class NeuralNetwork:
             print(f"The number of features ({X.shape[0]}) is not equal to the inputs indicated")
             return -1
 
+        if algorithm == 'gd':
+            minimiser = self. __gradient_descendent
+
+
         Omega_tot = X.shape[1]
         cost_epoch = np.zeros(num_epochs)
 
@@ -168,16 +179,8 @@ class NeuralNetwork:
             for x, y in zip(X_batches,  Y_batches):
                 self.backpropagation(x,y)
                 cost_epoch[epoch] += self.cost(y)*x.shape[1]    # Weighted sum
-                for l, layer in enumerate(self.network):
-                    # Momentum
 
-                    # RMSprop
-
-                    # Bias correction
-
-                    # Gradient descent
-                    layer.W -= learning_rate * layer.dJdW
-                    layer.b -= learning_rate * layer.dJdb
+                minimiser(learning_rate)
 
 
             # Average cost for the Omega observations
