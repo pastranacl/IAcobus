@@ -5,15 +5,12 @@ The main code is contained in the neurnet class.
 
 
 ## Installation
-The code needs Python 3.12, Numpy 1.26.4.
-dill pickle
-The only additional libary necessary to operate the code is tqdm.
-Matplotlib is used in the examples for reppresentation of the data.
+The code uses Python 3.12, Numpy 1.26.4. As accesory libraries: dill (i.e., pickle on steroids) and tqdm to monitor training progress.
+Installation files are provided in the `setup` folder to install via pip.
+Matplotlib is used in the examples for reppresentation of the data, but it is not needed in the core code.
 
 ## Instructions
 The implementation approach is inspired by the paradigm of TensorFlow + Keras.
-
-
 
 1. **Create neural network object:** The neural network is created by specifiying the number of inputs, the topology,  the activation functions for each layer, and hte cost function. The topology of the network as well as the associated activation functions for each layer are provided as arrays. The following code creates the network `ryc`, composed of three hidden layers and one input variable. The two first layers have 64 $\times$ ReLU activation functions, and the last one is a linear function. The cost function is the mean-squared error.
 
@@ -62,9 +59,9 @@ The `cost` is an array with the cost for each epoch, and this is useful for repp
 | `num_epochs`     | int. The number of optimisation steps, considering as optimisation step the full pass to the data set |
 | `batch_size`      | int. Samples to use. For a total number of $\Omega$ samples, and batch size $\omega$, the total number of batches is simply $\Omega/\omega$. Since this library works on the CPU, fitting the data on memory is not a problem, and then this hyperparameter is not so critical. |
 | `learning_rate` | float. Initial learning rate for the optimiser. |
-| `algorithm` | string. Optimisation algorithm to use. The options are `adam`, and  gradient descendent `gd`.  |
+| `algorithm` | string. Optimisation algorithm to use. The options are `adam` (default), gradient descendent with momentum `gdm`, and basic gradient descendent `gd`.  |
 | `verbose` | bool. Prints the epoch number and the cost during training. |
-| `**kwargs` | floats. Additional parameters to pass to the minimisation algorithm. In particular the $\beta_1$ and $\beta_2$ of the Adam algorithm can be selected as `beta1=0.9` and `beta2=0.999`. Using the adam algorithm and indicating `beta1=0` leads to the RMSPropm method. |
+| `**kwargs` | floats. Additional parameters to pass to the minimisation algorithm. In particular, the $\beta_1$ and $\beta_2$ of the Adam algorithm can be selected as `beta1=0.9` and `beta2=0.999`. The parameter $\beta$ in the gradient descendent with momentum is set as $beta=0.9$. Choosing the adam algorithm and indicating `beta1=0` leads to the RMSPropm method.  |
 
 4. **Forward propagation:** To obtain predictions form an input array `X_test` the `forward` function is called:
 

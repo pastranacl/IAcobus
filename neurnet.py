@@ -1,5 +1,5 @@
 """
-    <project name or script purpose>
+    Iacobus
 
     Author: Cesar L. Pastrana
     Date: 2024
@@ -8,7 +8,7 @@
     Description:
     Library implementing a neural network at CPU level relying solely on Numpy
 
-    Copyright (c) 2024 Cesar L.Pastrana
+    Copyright (c) 2024, Cesar L.Pastrana
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <https://www.gnu.org/licenses/>.
+
 """
 
 import numpy as np
@@ -125,7 +126,7 @@ class NeuralNetwork:
         delta = self.cost_grad(Y) * last_layer.grad_activation_func(last_layer.Z)
         last_layer.dJdb = np.sum(delta, axis=1, keepdims=True) # NOTE: LOOK THE SUM HERE...
         last_layer.dJdW = delta @ next_to_last_layer.A.T
-
+        #last_layer.dJdW = delta @ last_layer.A.T
 
         # 2.2 Backpropagation (remaining layers)
         for l in reversed(range(0, self.num_hidden_layers-1)):
@@ -153,6 +154,32 @@ class NeuralNetwork:
         return gd_update
 
 
+    def __adaptative_gradient_descendent(self, X, Y, learning_rate=1e-3, *args, **kwargs):
+
+        theta = 1e12
+
+        lambda_W = learning_rate
+        lambda_b = learning_rate
+
+        for l, layer in enumerate(self.network):
+            layer.W -= learning_rate * layer.dJdW
+            layer.b -= learning_rate * layer.dJdb
+
+
+        def agd_update():
+
+
+            for l, layer in enumerate(self.network):
+
+                lambda_W[l] = np.min( np.sqrt(1 + theta_W[l])*lambda_W[l] ,
+                                     )
+
+                layer.W -= lambda_W[l] * layer.dJdW
+                theta_W[l] = lambda_W[l]/lambda_W_pre[l]
+
+
+
+                layer.b -= lambda_b[l] * layer.dJdb
 
     def __gradient_descendent_momentum(self, learning_rate=1e-3, beta=0.9):
         """
@@ -245,8 +272,8 @@ class NeuralNetwork:
                 b_ms[l] = beta1*b_ms[l] + (1-beta1)*layer.dJdb
 
                 # Second raw moment estimates
-                W_vs[l] = beta2*W_vs[l] + (1-beta2)*layer.dJdW**2
-                b_vs[l] = beta2*b_vs[l] + (1-beta2)*layer.dJdb**2
+                W_vs[l] = beta2*W_vs[l] + (1-beta2)*layer.dJdW*layer.dJdW
+                b_vs[l] = beta2*b_vs[l] + (1-beta2)*layer.dJdb*layer.dJdb
 
                 # Bias corrections
                 dJdW_m_hat =  W_ms[l]/(1-beta1**(t+1))
@@ -256,7 +283,7 @@ class NeuralNetwork:
                 dJdb_v_hat =  b_vs[l]/(1-beta2**(t+1))
 
                 # Update Parameters
-                layer.W  -= learning_rate*dJdW_m_hat/(np.sqrt(dJdW_v_hat) + self.EPS)
+                layer.W -= learning_rate*dJdW_m_hat/(np.sqrt(dJdW_v_hat) + self.EPS)
                 layer.b -= learning_rate*dJdb_m_hat/(np.sqrt(dJdb_v_hat) + self.EPS)
 
 
