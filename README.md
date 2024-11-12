@@ -40,7 +40,7 @@ The implementation approach is inspired by the paradigm of TensorFlow + Keras.
 | `activation_funcs` | Array of strings for the activation function of each layer. The dimensions must coincide with that of `topology`. The activation functions available are the Heavyside `heavyside`, the rectifying linear unit ReLU `relu`, the sigmoid `sigmoid`, and the softmax `softmax`   |
 | `cost_func`| String indicating the cost function to use. The options are the mean-squared error `mse`, and binary cross entropy `bin-cross-ent` |
 
-1. **Preprocessing of data:** Traning and validation, description of sizes One hot encoding
+2. **Preprocessing of data:** Traning and validation, description of sizes One hot encoding
 
 3. **Training:** Initially, the weights $W$ are initialised with random numbers (using He-initilisation). Biases $b$ are initilised to zero. Labeled data can be used to train the network, such that the optimal $W$ and $b$ for each neuron of the network is determined as those minimising the cost function. The following code uses the matrix $X$ as input and $Y$ labeled data.
 INDICATE HOW YOU SHOULD PROVIDE THE VALUES
@@ -64,7 +64,7 @@ The `cost` is an array with the cost for each epoch, and this is useful for repp
 | `learning_rate` | float. Initial learning rate for the optimiser. |
 | `algorithm` | string. Optimisation algorithm to use. The options are `adam`, and  gradient descendent `gd`.  |
 | `verbose` | bool. Prints the epoch number and the cost during training. |
-| `**kwargs` | floats. Additional parameters to pass to the minimisation algorithm. In particular the $\beta_1$ and $\beta_2$ of the Adam algorithm can be selected as `beta1=0.9` and `beta2=0.999`. |
+| `**kwargs` | floats. Additional parameters to pass to the minimisation algorithm. In particular the $\beta_1$ and $\beta_2$ of the Adam algorithm can be selected as `beta1=0.9` and `beta2=0.999`. Using the adam algorithm and indicating `beta1=0` leads to the RMSPropm method. |
 
 4. **Forward propagation:** To obtain predictions form an input array `X_test` the `forward` function is called:
 

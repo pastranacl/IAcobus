@@ -153,6 +153,40 @@ class NeuralNetwork:
         return gd_update
 
 
+
+    def __gradient_descendent_momentum(self, learning_rate=1e-3, beta=0.9):
+        """
+            Python closure function that implement gradient descendent with momentum
+            and no bias correction.
+
+        """
+        # Initialise the first  arrays/vector for the weighs and biases
+        W_ms = []
+        b_ms = []
+
+        for l, layer in enumerate(self.network):
+            W_ms.append(np.zeros_like(layer.dJdW))
+            b_ms.append(np.zeros_like(layer.dJdb))
+
+
+        def gdm_update(*args, **kwarg):
+            """
+                Update rule for gradient descendent with momentum
+            """
+            nonlocal W_ms, b_ms
+            for l, layer in enumerate(self.network):
+                # First moment estimate
+                W_ms[l] = beta*W_ms[l] + (1-beta)*layer.dJdW
+                b_ms[l] = beta*b_ms[l] + (1-beta)*layer.dJdb
+
+                # Update Parameters
+                layer.W -= learning_rate*W_ms[l]
+                layer.b -= learning_rate*b_ms[l]
+
+        return gdm_update
+
+
+
     def __adam(self, learning_rate=1e-3, beta1=0.9, beta2=0.999):
         """
 
@@ -198,7 +232,7 @@ class NeuralNetwork:
                 Parameters
                 -----------
                 t   : int.
-                      Epoch number for the bias correction
+                      Epoch number for the bias correction step
             """
 
             # Keep state persistent across calls
@@ -264,12 +298,15 @@ class NeuralNetwork:
             print(f"The number of features ({X.shape[0]}) is not equal to the inputs indicated")
             return -1
 
-        if algorithm not in ['gd', 'adam']:
+        if algorithm not in ['gd', 'gdm', 'adam']:
             print("The specified optimisation algorithm is not valid.")
             return -1
 
+
         if algorithm == 'gd':
             minimiser = self.__gradient_descendent(learning_rate=learning_rate)
+        elif algorithm == 'gdm':
+            minimiser = self.__gradient_descendent_momentum(learning_rate=learning_rate, **kwargs)
         elif algorithm == 'adam':
             minimiser = self.__adam(learning_rate=learning_rate, **kwargs)
 
@@ -480,7 +517,6 @@ class NeuralNetwork:
 
     def __cost_grad_cross_entropy(self, Y):
         return -(Y / self.Y_hat)/Y.shape[1]
-
 
 
 
