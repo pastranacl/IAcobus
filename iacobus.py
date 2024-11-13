@@ -33,7 +33,21 @@ from tqdm import tqdm
 class IAcobus:
     """
 
+        IAcobus self-containd class to build, train and preprocess fully-conected neural networks
 
+        Attributes
+        ----------
+            n_inputs : int
+                Number of neurons of the inpput layer = numer of features
+            topolgy : array of int
+                Number of neurons on each layer
+            act_func  :  array of strings
+                Activation function to use in each layer
+            cost_fuct : string
+                Cost function to use
+
+        Methods (all private)
+        -------
 
 
     """
@@ -393,17 +407,44 @@ class IAcobus:
 
     class __HiddenLayer():
         """
-            __HiddenLayer is private class that creates a layer of neurons, attenting to
-            the number of neurons of the previous layer. The the weigths
+        __HiddenLayer is private class that creates a layer of neurons, attenting to
+        the number of neurons of the previous layer. The the weigths
 
 
+        Attributes
+        ----------
+        n_neurons_prev : int
+            Number of neurons of the previous layer
+        n_neurons : int
+            Number of neurons of this layer
+        act_func  :  string
+            Activation function to use in all the neurons of the layer
 
-
+        Methods (all private)
+        -------
+        __linear()
+            Linear activation function.
+        __grad_linear()
+            Gradiento of the linear activation function
+        __sigmoid()
+            Sigmoid activation function.
+        __grad_sigmoid()
+            Gradient of the sigmoid activation function
+        __tanh()
+            Hyperbolic tangent activation function.
+        __grad_tanh()
+            Gradient of the hyperbolic tanget activation function
+            __heavyside()
+            Heavyside activation function.
+        __grad_heavyside
+            Gradient of the Heavyside activation function
 
         """
 
         def __init__(self, n_neurons_prev, n_neurons, act_func="relu"):
-
+            """
+                Initialised the hidden layer
+            """
             # Intialisation of the Weight matrix (He initialisation) and the bias vector
             self.W =  np.random.rand(n_neurons, n_neurons_prev)*np.sqrt(2.0 / n_neurons_prev)
             self.b = np.random.rand(n_neurons, 1)
@@ -512,7 +553,7 @@ class IAcobus:
         #return  np.sum((Y - 1)*np.log(1 - self.Y_hat + NeuralNetwork.EPS) - Y*np.log(self.Y_hat + NeuralNetwork.EPS))/Y.shape[1]
 
     def __cost_grad_binary_cross_entropy(self, Y):
-        return  ((1 - Y)/(1 - self.Y_hat + self.EPS) - Y/self.Y_hat)/Y.shape[1]
+        return  np.sum(((1 - Y)/(1 - self.Y_hat + self.EPS) - Y/self.Y_hat),  axis=1, keepdims=True )/Y.shape[1]
         #return  np.sum( (1 - Y)/(1 - self.Y_hat + NeuralNetwork.EPS) - Y/self.Y_hat, axis=1, keepdims=True )
 
 
@@ -631,6 +672,5 @@ class IAcobus:
                         Path and filename of the .pkl file to load
 
         """
-        #ryc = neurnet.load('my_instance.pkl')  # Load instance
         with open(file_name, 'rb') as f:
             return dill.load(f)
