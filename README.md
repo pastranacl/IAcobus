@@ -1,8 +1,8 @@
 # IAcobus
 
-IAcobus is a fully functional library to build fully connected neural networks. It takes its name from the famous Spanish neuroscientist Santiago Ramón y Cajal, Nobel Prize in Physiology and Medicine in 1906, and the first person to identify the neurons of the brain. (Santiago is the Spanish variant of the latinaised name (Saint) Iacobus).
+IAcobus is a fully functional library to build fully connected neural networks. It takes its name from the famous Spanish neuroscientist Santiago Ramón y Cajal, Nobel Prize in Physiology and Medicine in 1906, and the first person to identify the neurons of the brain(Santiago is the Spanish variant of the latinaised name (Saint) Iacobus).
 
-This project started as an exercise to undestand the implementation of neural network from scratch, including batch backpropagation and training. The code make use of Numpy vectorisation for optimal speed. The overall design is not centered on performance, but on the clarity of the steps. For full mathematical details behind the operation of neural networks see the publication REF.
+This project started as an exercise to undestand the implementation of neural network from scratch, including batch backpropagation and training. The code make use of Numpy vectorisation for optimal speed. Nevertheless, the overall design is not centered on performance, but on the clarity of the steps. For full mathematical details behind the operation of neural networks see the publication "Mathematical basis of neural network for the curious physicist", Pastrana C.L.
 
 
 ## Installation
@@ -75,7 +75,7 @@ The `cost` is an array with the cost for each epoch, and this is useful for repp
 | `num_epochs`     | int. The number of optimisation steps, considering as optimisation step the full pass to the data set |
 | `batch_size`      | int. Samples to use. For a total number of $\Omega$ samples, and batch size $\omega$, the total number of batches is simply $\Omega/\omega$. Since this library works on the CPU, fitting the data on memory is not a problem, and then this hyperparameter is not so critical. |
 | `learning_rate` | float. Initial learning rate for the optimiser. |
-| `algorithm` | string. Optimisation algorithm to use. The options are `adam` (default), gradient descendent with momentum `gdm`, and basic gradient descendent `gd`.  |
+| `algorithm` | string. Optimisation algorithm to use. The options are Adam `adam` (default), the recent ADOPT algorithm `adopt`, gradient descendent with momentum `gdm`, and basic gradient descendent `gd`.  |
 | `verbose` | bool. Prints the epoch number and the cost during training. |
 | `**kwargs` | floats. Additional parameters to pass to the minimisation algorithm. In particular, the $\beta_1$ and $\beta_2$ of the Adam algorithm can be selected as `beta1=0.9` and `beta2=0.999`. The parameter $\beta$ in the gradient descendent with momentum is set as $\beta=0.9$. Choosing the adam algorithm and indicating `beta1=0` leads to the RMSPropm method.  |
 

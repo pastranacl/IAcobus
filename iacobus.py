@@ -201,7 +201,7 @@ class IAcobus:
 
 
 
-    def __adam(self, learning_rate=1e-3, beta1=0.9, beta2=0.999):
+    def __adam(self, learning_rate=1e-3, beta1=0.9, beta2=0.999, eps_adam=1e-8):
         """
 
             Python closure function that implement the Adam optimiser
@@ -270,11 +270,79 @@ class IAcobus:
                 dJdb_v_hat =  b_vs[l]/(1-beta2**(t+1))
 
                 # Update Parameters
-                layer.W -= learning_rate*dJdW_m_hat/(np.sqrt(dJdW_v_hat) + self.EPS)
-                layer.b -= learning_rate*dJdb_m_hat/(np.sqrt(dJdb_v_hat) + self.EPS)
+                layer.W -= learning_rate*dJdW_m_hat/(np.sqrt(dJdW_v_hat) + eps_adam)
+                layer.b -= learning_rate*dJdb_m_hat/(np.sqrt(dJdb_v_hat) + eps_adam)
 
 
         return adam_update
+
+
+
+    def __adopt(self, X, Y, learning_rate=1e-3, beta1=0.9, beta2=0.9999, eps_adopt=1e-6):
+        """
+
+            Python closure function that implement the ADOPT optimiser
+
+            Parameters
+            ----------
+                learning_rate : float
+                                Basal lerning rate, alpha in the original paper
+                beta1 : float
+                        Exponential decay rates for the first moment estimate
+                beta2 : float
+                        Exponential decay rates for the second moment estimate
+
+            Returns
+            -------
+                adop_update : function
+                              Update rule to be used in the training loop
+
+        """
+
+        # Initialise the first and second moment arrays/vector for the weighs and biases
+        self.backpropagation(X,Y)
+
+        W_vs = []
+        b_vs = []
+        W_ms = []
+        b_ms = []
+
+        for l, layer in enumerate(self.network):
+
+            W_vs.append(layer.dJdW*layer.dJdW)
+            b_vs.append(layer.dJdb*layer.dJdb)
+
+            W_ms.append(layer.dJdW / np.maximum(np.sqrt(layer.dJdW*layer.dJdW), eps_adopt) )
+            b_ms.append(layer.dJdb / np.maximum(np.sqrt(layer.dJdb*layer.dJdb), eps_adopt) )
+
+
+        def adopt_update(t):
+            """
+                Implements the Adam algorithm with bias correction as
+                described in ADOPT: Modified Adam Can Converge with Any β2
+                with the Optimal Rate by Taniguchi S. et al.
+                https://arxiv.org/pdf/2411.02853 (2024)
+
+                Parameters
+                -----------
+                t   : int.
+                    Epoch number for the bias correction step
+            """
+
+
+            nonlocal W_ms, b_ms, W_vs, b_vs  # Keep state persistent across calls
+            for l, layer in enumerate(self.network):
+
+                W_ms[l]  = beta1*W_ms[l] + (1-beta1)*layer.dJdW/np.maximum(np.sqrt(W_vs[l]), eps_adopt)
+                layer.W -= learning_rate*W_ms[l]
+                W_vs[l]  = beta2*W_vs[l] + (1-beta2)*layer.dJdW*layer.dJdW
+
+                b_ms[l]  = beta1*b_ms[l] + (1-beta1)*layer.dJdb/np.maximum(np.sqrt(b_vs[l]), eps_adopt)
+                layer.b -= learning_rate*b_ms[l]
+                b_vs[l]  = beta2*b_vs[l] + (1-beta2)*layer.dJdb*layer.dJdb
+
+
+        return adopt_update
 
 
 
@@ -312,22 +380,26 @@ class IAcobus:
             print(f"The number of features ({X.shape[0]}) is not equal to the inputs indicated")
             return -1
 
-        if algorithm not in ['gd', 'gdm', 'adam']:
+        if algorithm not in ['gd', 'gdm', 'adam', 'adopt']:
             print("The specified optimisation algorithm is not valid.")
             return -1
 
 
+        # Selection of minimisation algorithm
         if algorithm == 'gd':
             minimiser = self.__gradient_descendent(learning_rate=learning_rate)
         elif algorithm == 'gdm':
             minimiser = self.__gradient_descendent_momentum(learning_rate=learning_rate, **kwargs)
         elif algorithm == 'adam':
             minimiser = self.__adam(learning_rate=learning_rate, **kwargs)
+        elif algorithm == 'adopt':
+            X_batches,  Y_batches = self.__gen_batches(X, Y, batch_size)
+            minimiser = self.__adopt(X_batches[0], Y_batches[0], learning_rate=learning_rate, **kwargs)
 
 
+        # Main training loop
         Omega_tot = X.shape[1]
         cost_epoch = np.zeros(num_epochs)
-
         for epoch in tqdm(range(0, num_epochs)):
 
             # Generate batches
@@ -343,7 +415,7 @@ class IAcobus:
 
             # Update progress bar
             if epoch % 10 == 0 and verbose == True:
-                tqdm.write(f" Epoch {epoch}/{num_epochs}; Cost: {cost_epoch[epoch]}")
+                tqdm.write(f" Epoch: {epoch}/{num_epochs};  Cost: {cost_epoch[epoch]}")
 
 
         return cost_epoch
