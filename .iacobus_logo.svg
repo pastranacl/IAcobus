@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="50.089951mm"
+   height="8.7716856mm"
+   viewBox="0 0 50.089951 8.7716856"
+   version="1.1"
+   id="svg5"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2" />
+  <g
+     id="layer1"
+     transform="translate(-2.8179161,-3.2576459)">
+    <text
+       xml:space="preserve"
+       style="font-size:10.5833px;line-height:1.25;font-family:sans-serif;word-spacing:0px;fill:#d40000;stroke:none;stroke-width:0.265;stroke-miterlimit:4;stroke-dasharray:none"
+       x="2.0276937"
+       y="10.581289"
+       id="text980"><tspan
+         id="tspan978"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:FreeSerif;-inkscape-font-specification:'FreeSerif Bold';fill:#d40000;fill-opacity:1;stroke:none;stroke-width:0.265;stroke-miterlimit:4;stroke-dasharray:none"
+         x="2.0276937"
+         y="10.581289"><tspan
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:9.87778px;font-family:FreeSans;-inkscape-font-specification:'FreeSans Bold';fill:#d40000;fill-opacity:1;stroke:none;stroke-width:0.265;stroke-miterlimit:4;stroke-dasharray:none"
+   id="tspan8806">IA</tspan>COBUS</tspan></text>
+    <circle
+       id="path18240"
+       style="fill:#000000;stroke:#000000;stroke-width:0.264583"
+       cx="49.250259"
+       cy="10.317738"
+       r="0.00096133561" />
+    <circle
+       id="path18242"
+       style="fill:#000000;stroke:#000000;stroke-width:0.264583"
+       cx="49.250259"
+       cy="10.317738"
+       r="0.00096133561" />
+    <circle
+       id="path20208"
+       style="fill:#d40000;stroke:#000000;stroke-width:0.264583"
+       cx="49.760258"
+       cy="6.0372562"
+       r="0.00072553632" />
+    <circle
+       id="path20210"
+       style="fill:#d40000;stroke:#000000;stroke-width:0.264583"
+       cx="49.760258"
+       cy="6.0372562"
+       r="0.00072553632" />
+    <path
+       style="fill:none;stroke:#d40000;stroke-width:0.465;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 42.802347,11.796832 h 4.99418 l 4.878839,-4.8788404"
+       id="path20764" />
+  </g>
+</svg>

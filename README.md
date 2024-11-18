@@ -1,4 +1,8 @@
-# IAcobus
+<h1 align="center">
+    <img src="https://raw.githubusercontent.com/pastranacl/neural_net_scratch/master/.iacobus_logo.svg" width="300">
+</h1><br>
+
+---------------
 
 IAcobus is a fully functional library to build fully connected neural networks. It takes its name from the famous Spanish neuroscientist Santiago Ramón y Cajal, Nobel Prize in Physiology and Medicine in 1906, and the first person to identify the neurons of the brain(Santiago is the Spanish variant of the latinaised name (Saint) Iacobus).
 
@@ -6,7 +10,7 @@ This project started as an exercise to undestand the implementation of neural ne
 
 
 ## Installation
-The code uses Python 3.12, Numpy 1.26.4. As accesory libraries: dill ($\sim$ pickle steroids) and tqdm to monitor training progress.
+The code uses Python 3.12, Numpy 1.26.4. As accesory libraries: dill ($\sim$ pickle on steroids) and tqdm to monitor the training progress.
 Installation files are provided in the `setup` folder to install via pip.
 Matplotlib is used in the examples for reppresentation of the data, but it is not needed in the core code.
 
@@ -98,14 +102,14 @@ The predictions variable `Y_pred` has dimensions given by ($n_{features}\times \
     ryc.export("trained_network.pkl")
 ```
 
-An already created and saved network with the `export` function can be loaded in a completely independent and new instance as:
+The saved network can be loaded with the `export` function in a completely new and independent instance as:
 ```
     from iacobus import IAcobus
 
     rycTrained = IAcobus.load("trained_network.pkl")
 ```
 
-This allow us to continue training the network or to call it for feedforward to obtain predictions. However, the topology of the network is created at inialisation and can not be modified.
+This allow us to continue training the network or to call it for feedforward to obtain predictions. However, the topology of the network is created at inialisation and can not be directly modified.
 
 ## Examples
 A full tutorial showing the operation of the library to tackle different problems with a mathematical inspiration are included in the  Jupiter notebook `tutorial.ipynb`.
