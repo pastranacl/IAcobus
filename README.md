@@ -1,8 +1,7 @@
 <h1 align="center">
-    <img src="https://raw.githubusercontent.com/pastranacl/neural_net_scratch/blob/master/.iacobus_logo.svg" width="300">
+    <img src="https://raw.githubusercontent.com/pastranacl/neural_net_scratch/master/.iacobus_logo.svg" alt="IAcobus"  width="300">
 </h1><br>
 
----------------
 
 IAcobus is a fully functional library to build fully connected neural networks. It takes its name from the famous Spanish neuroscientist Santiago Ramón y Cajal, Nobel Prize in Physiology and Medicine in 1906, and the first person to identify the neurons of the brain(Santiago is the Spanish variant of the latinaised name (Saint) Iacobus).
 
