@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="https://raw.githubusercontent.com/pastranacl/neural_net_scratch/refs/heads/master/.iacobus_logo?token=GHSAT0AAAAAAC2VLF3BKGZEX7JGHX43RDOOZZ3UDJA" alt="IAcobus"  width="300">
+    <img src="https://raw.githubusercontent.com/pastranacl/neural_net_scratch/refs/heads/master/.iacobus_logo.svg?token=GHSAT0AAAAAAC2VLF3BKGZEX7JGHX43RDOOZZ3UDJA" alt="IAcobus"  width="300">
 </h1><br>
 
 
