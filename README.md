@@ -1,9 +1,9 @@
 <h1 align="center">
-    <img src="https://raw.githubusercontent.com/pastranacl/neural_net_scratch/refs/heads/master/.iacobus_logo.svg?token=GHSAT0AAAAAAC2VLF3BKGZEX7JGHX43RDOOZZ3UDJA" alt="IAcobus"  width="300">
+    <img src="https://raw.githubusercontent.com/pastranacl/IAcobus/refs/heads/master/.iacobus_logo.svg?token=GHSAT0AAAAAAC2VLF3B6BQAIFFNOKHL66HUZZ32DSQ" alt="IAcobus"  width="300">
 </h1><br>
 
 
-IAcobus is a fully functional library to build fully connected neural networks. It takes its name from the famous Spanish neuroscientist Santiago Ramón y Cajal, Nobel Prize in Physiology and Medicine in 1906, and the first person to identify the neurons of the brain(Santiago is the Spanish variant of the latinaised name (Saint) Iacobus).
+IAcobus is a fully functional library to build fully connected neural networks. It takes its name from the famous Spanish neuroscientist Santiago Ramón y Cajal, Nobel Prize in Physiology and Medicine in 1906, and the first person to identify the neurons of the brain(Santiago is the Spanish variant of the latinised name (Saint) Iacobus).
 
 This project started as an exercise to undestand the implementation of neural network from scratch, including batch backpropagation and training. The code make use of Numpy vectorisation for optimal speed. Nevertheless, the overall design is not centered on performance, but on the clarity of the steps. For full mathematical details behind the operation of neural networks see the publication "Mathematical basis of neural network for the curious physicist", Pastrana C.L.
 
