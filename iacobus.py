@@ -203,7 +203,6 @@ class IAcobus:
 
     def __adam(self, learning_rate=1e-3, beta1=0.9, beta2=0.999, eps_adam=1e-8):
         """
-
             Python closure function that implement the Adam optimiser
 
             Parameters
@@ -280,7 +279,6 @@ class IAcobus:
 
     def __adopt(self, X, Y, learning_rate=1e-3, beta1=0.9, beta2=0.9999, eps_adopt=1e-6):
         """
-
             Python closure function that implement the ADOPT optimiser
 
             Parameters
@@ -318,9 +316,8 @@ class IAcobus:
 
         def adopt_update(t):
             """
-                Implements the Adam algorithm with bias correction as
-                described in ADOPT: Modified Adam Can Converge with Any β2
-                with the Optimal Rate by Taniguchi S. et al.
+                Implements the Adopt algorithm as described in:
+                ADOPT: Modified Adam Can Converge with Any β2 with the Optimal Rate by Taniguchi S. et al.
                 https://arxiv.org/pdf/2411.02853 (2024)
 
                 Parameters
@@ -400,11 +397,12 @@ class IAcobus:
         # Main training loop
         Omega_tot = X.shape[1]
         cost_epoch = np.zeros(num_epochs)
-        for epoch in tqdm(range(0, num_epochs)):
 
-            # Generate batches
+        pbar = tqdm(total=num_epochs)
+        for epoch in range(0, num_epochs):
+
+            # Generate and iterate over batches
             X_batches,  Y_batches = self.__gen_batches(X, Y, batch_size)
-
             for x, y in zip(X_batches,  Y_batches):
                 self.backpropagation(x,y)
                 cost_epoch[epoch] += self.cost(y)*x.shape[1]    # Weighted sum
@@ -415,8 +413,10 @@ class IAcobus:
 
             # Update progress bar
             if epoch % 10 == 0 and verbose == True:
-                tqdm.write(f" Epoch: {epoch}/{num_epochs};  Cost: {cost_epoch[epoch]}")
+                pbar.set_description_str(f"Cost: {cost_epoch[epoch]:.5f};   Epoch: {epoch}/{num_epochs}")
 
+
+            pbar.update(1)
 
         return cost_epoch
 
