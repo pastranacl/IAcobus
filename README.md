@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="https://raw.githubusercontent.com/pastranacl/IAcobus/refs/heads/master/.iacobus_logo.svg?token=GHSAT0AAAAAAC2VLF3B6BQAIFFNOKHL66HUZZ32DSQ" alt="IAcobus"  width="300">
+    <img src="https://raw.githubusercontent.com/pastranacl/IAcobus/refs/heads/master/.iacobus_logo.svg?token=GHSAT0AAAAAAC2VLF3BG564V6FGMTCSJUZCZZ34IXA" alt="IAcobus"  width="350">
 </h1><br>
 
 
