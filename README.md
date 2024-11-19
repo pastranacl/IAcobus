@@ -3,9 +3,9 @@
 </h1><br>
 
 
-IAcobus is a fully functional library to build fully connected neural networks. It takes its name from the famous Spanish neuroscientist Santiago Ramón y Cajal, Nobel Prize in Physiology and Medicine in 1906, and the first person to identify the neurons of the brain(Santiago is the Spanish variant of the latinised name (Saint) Iacobus).
+IAcobus is a fully functional library to build fully connected neural networks. It takes its name from the famous Spanish neuroscientist Santiago Ramón y Cajal, Nobel Prize in Physiology and Medicine in 1906, and the first person to identify the neurons of the brain (Santiago is a Spanish name ethymologically deriving from Saint Iacobus).
 
-This project started as an exercise to undestand the implementation of neural network from scratch, including batch backpropagation and training. The code make use of Numpy vectorisation for optimal speed. Nevertheless, the overall design is not centered on performance, but on the clarity of the steps. For full mathematical details behind the operation of neural networks see the publication "Mathematical basis of neural network for the curious physicist", Pastrana C.L.
+This project started as an exercise to undestand the implementation of neural network from scratch, including batch backpropagation and training. The code make use of Numpy vectorisation for optimal speed. Nevertheless, the overall design is not centered on performance, but on the clarity of the underlying steps. For full mathematical details behind the operation of neural networks see the publication "Mathematical basis of neural networks for curious physicists", Pastrana C.L. (2024).
 
 
 ## Installation
@@ -80,7 +80,7 @@ The `cost` is an array with the cost for each epoch, and this is useful for repp
 | `learning_rate` | float. Initial learning rate for the optimiser. |
 | `algorithm` | string. Optimisation algorithm to use. The options are Adam `adam` (default), the recent ADOPT algorithm `adopt`, gradient descendent with momentum `gdm`, and basic gradient descendent `gd`.  |
 | `verbose` | bool. Prints the epoch number and the cost during training. |
-| `**kwargs` | floats. Additional parameters to pass to the minimisation algorithm. In particular, the $\beta_1$ and $\beta_2$ of the Adam algorithm can be selected as `beta1=0.9` and `beta2=0.999`. The parameter $\beta$ in the gradient descendent with momentum is set as $\beta=0.9$. Choosing the adam algorithm and indicating `beta1=0` leads to the RMSPropm method.  |
+| `**kwargs` | floats. Additional parameters to pass to the minimisation algorithm. In particular, the $\beta_1$ and $\beta_2$ of the Adam algorithm can be selected as `beta1=0.9` and `beta2=0.999`. The parameter $\beta$ in the gradient descendent with momentum is set as $\beta=0.9$. Choosing the Adam algorithm and indicating `beta1=0` leads to the RMSProp method.  |
 
 4. **Forward propagation:** To obtain predictions form an input array `X_test` the `forward` function is called:
 
@@ -111,7 +111,7 @@ The saved network can be loaded with the `export` function in a completely new a
 This allow us to continue training the network or to call it for feedforward to obtain predictions. However, the topology of the network is created at inialisation and can not be directly modified.
 
 ## Examples
-A full tutorial showing the operation of the library to tackle different problems with a mathematical inspiration are included in the  Jupiter notebook `tutorial.ipynb`.
+A full tutorial showing the operation of the library to tackle different problems with a mathematical inspiration are included in the Jupiter notebook `tutorial.ipynb`.
 
 
 
@@ -119,5 +119,4 @@ A full tutorial showing the operation of the library to tackle different problem
 
 [ ] Implement the softmax function gradient
 [ ] Perform test code, training for multiclass
-[ ] Finish documentation
 

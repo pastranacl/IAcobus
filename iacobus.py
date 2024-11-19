@@ -63,12 +63,21 @@ class IAcobus:
         if any(af not in ['relu', 'sigmoid', 'tanh', 'linear', 'heavyside', 'softmax'] for af in act_funcs): raise ValueError(f"Unknown activation function")
         if cost_func not in ['mse', 'bin-cross-entropy', 'cross-entropy']: raise ValueError(f"Unknown loss function")
 
+        # Checks for the softmax
+        for l, af in enumerate(act_funcs):
+            if af=='softmax' and l != len(act_funcs) - 1:
+                raise ValueError(f"In the current implementatiom Softmax layer is only possible on the last layer")
+
+        if act_funcs[-1] == 'softmax' and cost_func != 'cross-entropy':
+            raise ValueError(f"In the current implementatiom Softmax layer can only be combined with cross-entropy")
+
 
         # Set up the network
         self.n_inputs = n_inputs
         self.topology = topology
         self.act_funcs = act_funcs
         self.num_hidden_layers = len(topology)
+        self.cost_func = cost_func
 
         if cost_func == 'mse':
             self.cost = self.__cost_norm
@@ -137,10 +146,16 @@ class IAcobus:
         last_layer = self.network[-1]
         next_to_last_layer = self.network[-2]
         #delta = self.cost_grad(Y)[:,np.newaxis,:] * last_layer.grad_activation_func(last_layer.Z)
-        delta = self.cost_grad(Y) * last_layer.grad_activation_func(last_layer.Z)
+
+        if last_layer.act_func=='softmax' and self.cost_func=='cross-entropy':
+            delta = last_layer.activation_func(last_layer.Z) - Y
+        else:
+            delta = self.cost_grad(Y) * last_layer.grad_activation_func(last_layer.Z)
+
+
         last_layer.dJdb = np.sum(delta, axis=1, keepdims=True) # NOTE: LOOK THE SUM HERE...
         last_layer.dJdW = delta @ next_to_last_layer.A.T
-        #last_layer.dJdW = delta @ last_layer.A.T
+
 
         # 2.2 Backpropagation (remaining layers)
         for l in reversed(range(0, self.num_hidden_layers-1)):
@@ -517,6 +532,8 @@ class IAcobus:
             """
                 Initialised the hidden layer
             """
+
+
             # Intialisation of the Weight matrix (He initialisation) and the bias vector
             self.W =  np.random.rand(n_neurons, n_neurons_prev)*np.sqrt(2.0 / n_neurons_prev)
             self.b = np.random.rand(n_neurons, 1)
@@ -531,6 +548,7 @@ class IAcobus:
             # the number of samples, i.e., columns in A and Z.
 
             # Assign activation function
+            self.act_func = act_func
             if act_func == "relu":
                 self.activation_func = self.__relu
                 self.grad_activation_func = self.__grad_relu
