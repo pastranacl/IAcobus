@@ -111,12 +111,5 @@ The saved network can be loaded with the `export` function in a completely new a
 This allow us to continue training the network or to call it for feedforward to obtain predictions. However, the topology of the network is created at inialisation and can not be directly modified.
 
 ## Examples
-A full tutorial showing the operation of the library to tackle different problems with a mathematical inspiration are included in the Jupiter notebook `tutorial.ipynb`.
-
-
-
-## Tasks
-
-[ ] Implement the softmax function gradient
-[ ] Perform test code, training for multiclass
+A full tutorial showing the operation of the library to tackle different problems, designed with a minimalist and mathematical perspective, are included in the Jupiter notebook `tutorial.ipynb`.
 

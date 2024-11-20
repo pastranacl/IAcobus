@@ -628,23 +628,19 @@ class IAcobus:
     #   Cost functions
     def __cost_norm(self, Y):
         dY = Y - self.Y_hat
-        #return np.mean(dY*dY)*0.5
         return np.sum(dY*dY)/(2*Y.shape[1])
 
     def __cost_grad_norm(self, Y):
         dY =  self.Y_hat - Y
-        #return 0.5*dY/Y.shape[1]
         return np.sum(dY, axis=1, keepdims=True)/Y.shape[1]
 
 
 
     def __cost_binary_cross_entropy(self, Y):
         return  np.mean((Y - 1)*np.log(1 - self.Y_hat + self.EPS) - Y*np.log(self.Y_hat + self.EPS))
-        #return  np.sum((Y - 1)*np.log(1 - self.Y_hat + NeuralNetwork.EPS) - Y*np.log(self.Y_hat + NeuralNetwork.EPS))/Y.shape[1]
 
     def __cost_grad_binary_cross_entropy(self, Y):
         return  np.sum(((1 - Y)/(1 - self.Y_hat + self.EPS) - Y/self.Y_hat),  axis=1, keepdims=True )/Y.shape[1]
-        #return  np.sum( (1 - Y)/(1 - self.Y_hat + NeuralNetwork.EPS) - Y/self.Y_hat, axis=1, keepdims=True )
 
 
 
