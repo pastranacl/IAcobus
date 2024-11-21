@@ -428,7 +428,7 @@ class IAcobus:
 
             # Update progress bar
             if epoch % 10 == 0 and verbose == True:
-                pbar.set_description_str(f"Cost: {cost_epoch[epoch]:.5f};   Epoch: {epoch}/{num_epochs}")
+                pbar.set_description_str(f"Cost: {cost_epoch[epoch]:.5g};   Epoch: {epoch}/{num_epochs}")
 
 
             pbar.update(1)

@@ -39,7 +39,10 @@ The implementation approach is inspired by the paradigm of TensorFlow + Keras.
 | `n_inputs`          | int. Number of features |
 | `topology` | Array containing the number of neurons on each layer |
 | `activation_funcs` | Array of strings for the activation function of each layer. The dimensions must coincide with that of `topology`. The activation functions available are the Heavyside `heavyside`, the rectifying linear unit ReLU `relu`, the sigmoid `sigmoid`, the hyperbolic tagent `tanh`, and the softmax function `softmax`   |
-| `cost_func`| String indicating the cost function to use. The options are the mean-squared error `mse`, and binary cross entropy `bin-cross-ent` |
+| `cost_func`| String indicating the cost function to use. The options are the mean-squared error `mse`, binary cross entropy `bin-cross-ent` and  multiple cross entropy `cross-entropy|
+
+
+In the current implementation, the `softmax` layer can only be used in the last layer and ìn combination with the  multiple cross entropy cost.
 
 2. **Preprocessing of data:** IAcobus uses column vectors by default. That is, each row is a feature, with different observations organanised in the columns. This organisation is different to the one typically used in `.csv` or tab formated files, such that the data would need to be transposed before being feed to IAcobus.
 
