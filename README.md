@@ -2,16 +2,14 @@
     <img src="imgs/.iacobus_logo.svg" alt="IAcobus"  width="350">
 </h1><br>
 
+**IAcobus** is a fully functional library for building fully connected neural networks. It is named after the renowned Spanish neuroscientist Santiago Ramón y Cajal, who was awarded the Nobel Prize in Physiology or Medicine in 1906, and the first person to identify the neurons of the brain. The name “Santiago” itself is derived etymologically from *Saint Iacobus* (Saint James in English).
 
-IAcobus is a fully functional library to build fully connected neural networks. It takes its name from the famous Spanish neuroscientist Santiago Ramón y Cajal, Nobel Prize in Physiology and Medicine in 1906, and the first person to identify the neurons of the brain (Santiago is a Spanish name ethymologically deriving from Saint Iacobus).
-
-This project started as an exercise to undestand the implementation of neural network from scratch, including batch backpropagation and training. The code make use of Numpy vectorisation for optimal speed. Nevertheless, the overall design is not centered on performance, but on the clarity of the underlying steps. For full mathematical details behind the operation of neural networks see the publication "Mathematical basis of neural networks for curious physicists", Pastrana C.L. (2024).
-
+This project began as an exercise to master the implementation of neural networks from scratch, inspired by Richard Feynman's famous overly used quote: *"What I cannot create, I do not understand."* The library includes batch backpropagation training, and is optimised using Numpy vectorisation for improved speed. However, the design prioritises clarity of the underlying steps rather than performance. For a full mathematical explanation of the principles behind neural networks, please refer to the publication *"Mathematical Basis of Neural Networks for Curious Physicists"* by C.L. Pastrana (2024).
 
 ## Installation
 The code uses Python 3.12, Numpy 1.26.4. As accesory libraries: dill ($\sim$ pickle on steroids) and tqdm to monitor the training progress.
 Installation files are provided in the `setup` folder to install via pip.
-Matplotlib is used in the examples for reppresentation of the data, but it is not needed in the core code.
+Matplotlib is used in the tutorial for the reppresentation of tdata; the MNIST database is taken from the Scikit-learn library. These two libraries are not needed in the core code.
 
 ## Instructions
 The implementation approach is inspired by the paradigm of TensorFlow + Keras.
